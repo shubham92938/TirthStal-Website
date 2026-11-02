@@ -88,7 +88,7 @@ export default function FestivalDetail() {
   return (
     <div className="fd-page" style={{ "--accent": festival.deityColor }}>
       <div className="fd-hero">
-        <img src={festival.image} alt={festival.name}
+        <img loading="lazy" decoding="async" src={festival.image} alt={festival.name}
           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }} />
         <div className="fd-hero__shade" />
         <div className="fd-hero__inner">

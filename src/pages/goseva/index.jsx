@@ -241,7 +241,7 @@ export default function Goseva() {
 
       {/* ── Hero ── */}
       <div className="gs-page__hero">
-        <img
+        <img loading="lazy" decoding="async"
           src="/images/goseva/gaushala-hero.jpg"
           className="gs-page__hero-bg"
           alt="Gaushala at sunrise"
@@ -783,7 +783,7 @@ export default function Goseva() {
                 <FiX size={18} />
               </button>
               <div className="gs-modal__img-wrap">
-                <img
+                <img loading="lazy" decoding="async"
                   src={selected.image}
                   alt={selected.name}
                   onError={(e) => { e.target.src = "/images/placeholder-temple.jpg"; }}

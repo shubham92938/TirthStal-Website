@@ -139,7 +139,7 @@ function TempleDetail({ slug }) {
         {images.length > 1 && (
           <div className="temple-detail__thumbnails">
             {images.map((img, i) => (
-              <img
+              <img loading="lazy" decoding="async"
                 key={img}
                 src={img}
                 alt={`${temple.name} view ${i + 1}`}
@@ -349,7 +349,7 @@ function TempleDetail({ slug }) {
                 <div className="temple-detail__nearby-grid">
                   {nearby.map((t) => (
                     <Link key={t.id} to={`/temples/${t.slug}`} className="temple-detail__nearby-card">
-                      <img src={t.images[0]} alt={t.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }} />
+                      <img loading="lazy" decoding="async" src={t.images[0]} alt={t.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }} />
                       <div>
                         <p className="nearby-card__name">{t.name}</p>
                         <p className="nearby-card__dist"><FiMapPin size={11} /> {t.distance.toLocaleString("en-IN")} km away · {t.district}</p>

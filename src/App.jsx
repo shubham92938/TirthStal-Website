@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
 import Loader from "./components/common/Loader";
@@ -30,9 +30,12 @@ const ResetPassword  = lazy(() => import("./pages/auth/reset-password"));
 const Legal          = lazy(() => import("./pages/Legal"));
 const NotFound       = lazy(() => import("./pages/NotFound"));
 
-export default function App() {
+// Auth screens bring their own branded layout, so the site chrome is hidden there
+function Shell() {
+  const { pathname } = useLocation();
+  const bare = pathname.startsWith("/auth/");
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <ScrollProgress />
       <Toaster
@@ -46,7 +49,8 @@ export default function App() {
           success: { iconTheme: { primary: "#f5b83d", secondary: "#3b0a0a" } },
         }}
       />
-      <Navbar />
+      {!bare && <Navbar />}
+      <main className="app-main">
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route path="/"                    element={<Home />}         />
@@ -74,8 +78,17 @@ export default function App() {
           <Route path="*"                           element={<NotFound />}       />
         </Routes>
       </Suspense>
-      <Footer />
-      <BackToTop />
+      </main>
+      {!bare && <Footer />}
+      {!bare && <BackToTop />}
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <Shell />
     </Router>
   );
 }

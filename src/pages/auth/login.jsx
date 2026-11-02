@@ -1,255 +1,69 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import { FiEye, FiEyeOff, FiArrowRight, FiArrowLeft } from "react-icons/fi";
+import { FiMail, FiLock, FiArrowRight, FiAlertCircle } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
-import "../../styles/pages/auth.css";
+import AuthLayout from "../../components/auth/AuthLayout";
+import AuthField from "../../components/auth/AuthField";
 
-const templeSlides = [
-  {
-    image:    "https://images.unsplash.com/photo-1548013146-72479768bada?w=800",
-    title:    "Mahakaleshwar Temple",
-    location: "Ujjain, Madhya Pradesh",
-  },
-  {
-    image:    "https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=800",
-    title:    "Omkareshwar Temple",
-    location: "Khandwa, Madhya Pradesh",
-  },
-  {
-    image:    "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800",
-    title:    "Khajuraho Temples",
-    location: "Chhatarpur, Madhya Pradesh",
-  },
-];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function Login() {
-  const navigate     = useNavigate();
-  const location     = useLocation();
-  const { login }    = useAuth();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const { login } = useAuth();
 
-  const [email,      setEmail]      = useState("");
-  const [password,   setPassword]   = useState("");
-  const [showPass,   setShowPass]   = useState(false);
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState("");
-  const [slideIndex, setSlideIndex] = useState(0);
+  const [email,    setEmail]    = useState("");
+  const [password, setPassword] = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
+  const [errors,   setErrors]   = useState({});
 
-  const current = templeSlides[slideIndex];
-
-  const prevSlide = () =>
-    setSlideIndex((p) => (p === 0 ? templeSlides.length - 1 : p - 1));
-  const nextSlide = () =>
-    setSlideIndex((p) => (p === templeSlides.length - 1 ? 0 : p + 1));
-
-  // ── Main Login Function ──
-  const handleLogin = async () => {
-    // 1. Validation
-    if (!email || !password) {
-      setError("Please fill in all fields.");
-      return;
-    }
-    if (!email.includes("@")) {
-      setError("Please enter a valid email.");
-      return;
-    }
-
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const next = {};
+    if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
+    if (!password) next.password = "Enter your password";
+    setErrors(next);
     setError("");
+    if (Object.keys(next).length) return;
+
     setLoading(true);
-
     try {
-      // 2. Backend ko data bhejo
-      await login(email, password);
-
-      // 3. Success → Home page pe navigate karo
+      await login(email.trim(), password);
+      toast.success("Welcome back 🙏");
       const from = location.state?.from;
       navigate(from ? `${from.pathname}${from.search || ""}` : "/", { replace: true });
-
     } catch (err) {
-      // 4. Error show karo
-      setError(
-        err.response?.data?.message ||
-        err.message ||
-        "Login failed. Please try again."
-      );
+      setError(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Enter key se bhi login ho
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleLogin();
-  };
-
   return (
-    <div className="auth-page">
+    <AuthLayout
+      variant="login"
+      title="Welcome back"
+      subtitle="Sign in to see your saved temples and festival reminders."
+      footer={<>New to Tirthstal? <Link to="/auth/signup">Create an account</Link></>}
+    >
+      <form onSubmit={handleLogin} noValidate>
+        {error && <div className="ax-alert" role="alert"><FiAlertCircle size={17} /> {error}</div>}
 
-      {/* ── Left Panel ── */}
-      <div className="auth-left">
-        <motion.img
-          key={slideIndex}
-          src={current.image}
-          alt={current.title}
-          className="auth-left__bg"
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1   }}
-          transition={{ duration: 0.6 }}
-          onError={(e) => {
-            e.target.src = "https://images.unsplash.com/photo-1548013146-72479768bada?w=800";
-          }}
-        />
-        <div className="auth-left__overlay" />
+        <AuthField label="Email address" type="email" icon={<FiMail size={18} />} autoComplete="email" inputMode="email"
+          value={email} onChange={(v) => { setEmail(v); setErrors((p) => ({ ...p, email: undefined })); }} error={errors.email} />
+        <AuthField label="Password" type="password" icon={<FiLock size={18} />} autoComplete="current-password"
+          value={password} onChange={(v) => { setPassword(v); setErrors((p) => ({ ...p, password: undefined })); }} error={errors.password} />
 
-        {/* Top Nav */}
-        <div className="auth-left__nav">
-          <Link to="/" className="auth-left__logo">
-            🛕 <span>Tirthstal</span>
-          </Link>
-          <div className="auth-left__nav-right">
-            <Link to="/auth/signup" className="auth-left__nav-link">Sign Up</Link>
-            <Link to="/"            className="auth-left__nav-btn">Explore</Link>
-          </div>
+        <div className="ax-row" style={{ justifyContent: "flex-end" }}>
+          <Link to="/auth/forgot">Forgot password?</Link>
         </div>
 
-        {/* Bottom */}
-        <div className="auth-left__bottom">
-          <div className="auth-left__temple-info">
-            <div className="auth-left__avatar">🛕</div>
-            <div>
-              <p className="auth-left__temple-name">{current.title}</p>
-              <p className="auth-left__temple-loc">{current.location}</p>
-            </div>
-          </div>
-          <div className="auth-left__controls">
-            <button className="auth-left__arrow" onClick={prevSlide}>
-              <FiArrowLeft size={16} />
-            </button>
-            <div className="auth-left__dots">
-              {templeSlides.map((_, i) => (
-                <span
-                  key={i}
-                  className={`auth-left__dot ${i === slideIndex ? "active" : ""}`}
-                  onClick={() => setSlideIndex(i)}
-                />
-              ))}
-            </div>
-            <button className="auth-left__arrow" onClick={nextSlide}>
-              <FiArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Right Panel ── */}
-      <div className="auth-right">
-
-        <div className="auth-right__top">
-          <div className="auth-right__logo">
-            <span className="auth-right__logo-icon">🛕</span>
-            <span className="auth-right__logo-text">Tirthstal</span>
-          </div>
-        </div>
-
-        <motion.div
-          className="auth-form"
-          onKeyDown={(e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") handleLogin(); }}
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0  }}
-          transition={{ duration: 0.4 }}
-        >
-          <h1 className="auth-form__title">Welcome Back 🙏</h1>
-          <p className="auth-form__sub">Sign in to continue your divine journey</p>
-
-          {/* Error Message */}
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                className="auth-form__error"
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0  }}
-                exit={{    opacity: 0, y: -8  }}
-              >
-                ⚠️ {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Email */}
-          <div className="auth-form__field">
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="auth-form__input"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="auth-form__field auth-form__field--pass">
-            <input
-              type={showPass ? "text" : "password"}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="auth-form__input"
-            />
-            <button
-              className="auth-form__eye"
-              onClick={() => setShowPass(!showPass)}
-              type="button"
-            >
-              {showPass ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-            </button>
-          </div>
-
-          {/* Forgot */}
-          <div className="auth-form__forgot">
-            <Link to="/auth/forgot">Forgot password?</Link>
-          </div>
-
-          {/* Divider */}
-          <div className="auth-form__divider">
-            <span /><p>or</p><span />
-          </div>
-
-          {/* Google */}
-          <button className="auth-form__google" type="button" onClick={() => toast("Google login is coming soon", { icon: "🚧" })}>
-            <img
-              src="https://www.google.com/favicon.ico"
-              alt="Google" width={18} height={18}
-            />
-            Login with Google
-          </button>
-
-          {/* Login Button */}
-          <button
-            className="auth-form__submit"
-            onClick={handleLogin}
-            disabled={loading}
-            type="button"
-          >
-            {loading ? (
-              <span className="auth-form__loading">
-                <span className="auth-spinner" />
-                Signing in...
-              </span>
-            ) : "Login"}
-          </button>
-
-          {/* Switch to Signup */}
-          <p className="auth-form__switch">
-            Don't have an account?{" "}
-            <Link to="/auth/signup">Sign up</Link>
-          </p>
-
-
-        </motion.div>
-      </div>
-    </div>
+        <button type="submit" className="ax-btn" disabled={loading}>
+          {loading ? <><span className="ax-spin" /> Signing in…</> : <>Sign in <FiArrowRight size={18} /></>}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }

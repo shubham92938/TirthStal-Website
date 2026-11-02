@@ -54,7 +54,7 @@ export default function Footer() {
         {/* Brand */}
         <div className="footer__brand">
           <Link to="/" className="footer__logo">
-            <img
+            <img loading="lazy" decoding="async"
               src="/icons/temple-logo.jpg"
               alt="Tirthstal"
               className="footer__logo-img"

@@ -118,6 +118,6 @@
 }
 @media (max-width: 520px) {
   .temples-page { padding: 12px 12px 40px; }
-  .temples-page__grid { grid-template-columns: 1fr; }
+  .temples-page__grid { grid-template-columns: minmax(0, 1fr); }
   .tcard__img-wrap { height: 190px; }
 }

@@ -186,7 +186,7 @@ export default function Favorites() {
                 whileHover={{ y: -4 }}
               >
                 <div className="fav-card__img-wrap">
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={item.image}
                     alt={item.name}
                     onError={(e) => { e.target.src = "/images/placeholder-temple.jpg"; }}
@@ -251,7 +251,7 @@ export default function Favorites() {
                 exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
                 transition={{ duration: 0.3, delay: i * 0.04 }}
               >
-                <img
+                <img loading="lazy" decoding="async"
                   src={item.image}
                   alt={item.name}
                   className="fav-list-item__img"

@@ -35,7 +35,7 @@ export default function Blog() {
       {/* ── Featured ── */}
       {featured && (
         <Link to={`/blog/${featured.slug}`} className="blog-page__featured">
-          <img
+          <img loading="lazy" decoding="async"
             src={featured.image}
             alt={featured.title}
             className="blog-page__featured-img"
@@ -99,7 +99,7 @@ export default function Blog() {
             whileHover={{ y: -4 }}
           >
             <Link to={`/blog/${b.slug}`} className="blog-card__img-wrap">
-              <img
+              <img loading="lazy" decoding="async"
                 src={b.image}
                 alt={b.title}
                 className="blog-card__img"
