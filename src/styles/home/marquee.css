@@ -1,0 +1,6 @@
+.marquee { overflow: hidden; background: var(--grad-ember); color: #fff; padding: 12px 0; position: relative; z-index: 2; box-shadow: 0 8px 24px rgba(200,97,10,.25); }
+.marquee__track { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee__item { font-family: var(--font-display); font-size: 22px; font-weight: 600; white-space: nowrap; padding: 0 26px; letter-spacing: .02em; }
+.marquee__star { color: var(--gold-soft); margin-right: 12px; font-size: 14px; }
+@keyframes marquee { to { transform: translateX(-50%); } }

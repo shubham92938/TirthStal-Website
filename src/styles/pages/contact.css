@@ -462,3 +462,10 @@
   .contact-form__captcha { padding: 10px 12px; gap: 8px; }
   .captcha__label { font-size: 12.5px; }
 }
+.contact-form__error { color: #d93025; font-size: 12.5px; margin-top: 6px; font-weight: 500; }
+.contact-form__field input.has-error, .contact-form__field textarea.has-error { border-color: #d93025 !important; box-shadow: 0 0 0 3px rgba(217,48,37,.12); }
+.contact-form__consent { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #4a3a30; cursor: pointer; }
+.contact-form__consent input { width: 18px; height: 18px; accent-color: #c8610a; }
+a.contact-sidebar__social-btn { display: flex; align-items: center; justify-content: center; color: #fff; transition: transform .25s; }
+a.contact-sidebar__social-btn:hover { transform: translateY(-4px) scale(1.06); }
+.contact-sidebar__info-text a:hover { color: #c8610a; text-decoration: underline; }

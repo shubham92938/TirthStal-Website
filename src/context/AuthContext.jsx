@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react";
 import {
   login as loginService,
@@ -52,6 +53,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (next) => {
+    setUser((prev) => {
+      const merged = { ...prev, ...next, id: next?.id || next?._id || prev?.id };
+      localStorage.setItem("tirthstal_user", JSON.stringify(merged));
+      return merged;
+    });
+  };
+
   const clearError = () => setError(null);
 
   return (
@@ -66,6 +75,7 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       clearError,
+      updateUser,
     }}>
       {children}
     </AuthContext.Provider>

@@ -188,3 +188,7 @@
 .footer__bottom-links a:hover {
   color: #c8610a;
 }
+.footer__contact-list a { color: inherit; transition: color .2s; }
+.footer__contact-list a:hover { color: var(--gold, #f5b83d); }
+.footer__newsletter-input { display: flex; }
+.footer__newsletter-input button:disabled { opacity: .6; }

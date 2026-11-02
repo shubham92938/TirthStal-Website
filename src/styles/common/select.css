@@ -1,0 +1,30 @@
+.ts-select { position: relative; width: 100%; font-family: var(--font-body, 'Poppins', sans-serif); }
+.ts-select__btn {
+  width: 100%; display: flex; align-items: center; gap: 8px; text-align: left;
+  padding: 11px 14px; border-radius: 12px;
+  background: #fff; border: 1.5px solid #eadfce; color: #2a1d17;
+  font-size: 13.5px; font-weight: 500; cursor: pointer;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.ts-select__btn:hover { border-color: #e0a468; background: #fffaf3; }
+.ts-select.is-open .ts-select__btn { border-color: #c8610a; box-shadow: 0 0 0 4px rgba(200,97,10,.12); }
+.ts-select__icon  { display: flex; color: #c8610a; }
+.ts-select__value { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-select__arrow { color: #b8855a; transition: transform .25s; flex-shrink: 0; }
+.ts-select.is-open .ts-select__arrow { transform: rotate(180deg); }
+.ts-select__list {
+  position: absolute; z-index: 60; top: calc(100% + 6px); left: 0; right: 0; min-width: 180px;
+  max-height: 260px; overflow-y: auto; list-style: none; padding: 6px; margin: 0;
+  background: rgba(255,255,255,.98); backdrop-filter: blur(10px);
+  border: 1px solid #f0e2cf; border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(59,10,10,.18);
+  animation: selectIn .18s ease-out;
+}
+@keyframes selectIn { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+.ts-select__list li {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 9px 12px; border-radius: 9px; font-size: 13px; color: #3a2a22; cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.ts-select__list li.hover, .ts-select__list li:hover { background: #fff1e2; color: #c8610a; }
+.ts-select__list li.selected { background: linear-gradient(90deg, #fff0dc, #ffe6c7); color: #b4520a; font-weight: 600; }

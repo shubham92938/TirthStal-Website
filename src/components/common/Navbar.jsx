@@ -3,23 +3,24 @@ import { Link, useLocation }           from "react-router-dom";
 import { motion, AnimatePresence }     from "framer-motion";
 import {
   FiHeart, FiGlobe, FiChevronDown,
-  FiUser, FiLogOut, FiSettings,
+  FiUser, FiLogOut,
   FiMenu, FiX
 } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 import { useAuth }       from "../../context/AuthContext";
 import { useFavorites }  from "../../context/FavoritesContext";
 import "../../styles/common/navbar.css";
 
 const navLinks = [
-  { label: "Home",       path: "/"          },
-  { label: "Temples",    path: "/temples"   },
-  { label: "Districts",  path: "/districts" },
-  { label: "Festivals",  path: "/festivals" },
-  { label: "Goseva",     path: "/goseva"    },
-  { label: "Temple Map", path: "/map"       },
-  { label: "Blog",       path: "/blog"      },
-  { label: "About Us",   path: "/about"     },
-  { label: "Contact",    path: "/contact"   },
+  { label: "Home",       key: "home",      path: "/"          },
+  { label: "Temples",    key: "temples",   path: "/temples"   },
+  { label: "Districts",  key: "districts", path: "/districts" },
+  { label: "Festivals",  key: "festivals", path: "/festivals" },
+  { label: "Goseva",     key: null,        path: "/goseva"    },
+  { label: "Temple Map", key: "map",       path: "/map"       },
+  { label: "Blog",       key: "blog",      path: "/blog"      },
+  { label: "About Us",   key: "about",     path: "/about"     },
+  { label: "Contact",    key: "contact",   path: "/contact"   },
 ];
 
 const languages = [
@@ -35,7 +36,10 @@ export default function Navbar() {
   const { favorites }                     = useFavorites();
 
   const [langOpen,     setLangOpen]     = useState(false);
-  const [activeLang,   setActiveLang]   = useState("English");
+  const { t, i18n }                     = useTranslation();
+  const langRef                         = useRef(null);
+  const activeLang = languages.find((l) => l.code === i18n.language)?.label || "English";
+  const label = (link) => (link.key ? t(`nav.${link.key}`, link.label) : link.label);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [menuOpen,     setMenuOpen]     = useState(false);
   const [scrolled,     setScrolled]     = useState(false);
@@ -51,18 +55,25 @@ export default function Navbar() {
   /* scroll shadow */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* close user menu on outside click */
+  /* close user / language menus on outside click or Escape */
   useEffect(() => {
     const handler = (e) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target))
         setUserMenuOpen(false);
+      if (langRef.current && !langRef.current.contains(e.target))
+        setLangOpen(false);
     };
+    const onKey = (e) => { if (e.key === "Escape") { setLangOpen(false); setUserMenuOpen(false); } };
+    document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   /* close drawer on route change (render-adjust pattern, no extra effect pass) */
@@ -108,7 +119,7 @@ export default function Navbar() {
                 to={link.path}
                 className={`navbar__link ${pathname === link.path ? "active" : ""}`}
               >
-                {link.label}
+                {label(link)}
                 {pathname === link.path && (
                   <motion.span
                     className="navbar__underline"
@@ -125,7 +136,8 @@ export default function Navbar() {
         <div className="navbar__right">
 
           {/* Language */}
-          <div className="navbar__lang" onClick={() => setLangOpen(!langOpen)}>
+          <div className="navbar__lang" ref={langRef} onClick={() => setLangOpen(!langOpen)} role="button" tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setLangOpen((o) => !o); }}>
             <FiGlobe size={16} />
             <span className="navbar__lang-text">{activeLang}</span>
             <FiChevronDown size={14} />
@@ -142,7 +154,7 @@ export default function Navbar() {
                     <li
                       key={lang.code}
                       className={activeLang === lang.label ? "selected" : ""}
-                      onClick={() => { setActiveLang(lang.label); setLangOpen(false); }}
+                      onClick={(e) => { e.stopPropagation(); i18n.changeLanguage(lang.code); setLangOpen(false); }}
                     >
                       {lang.label}
                     </li>
@@ -197,11 +209,6 @@ export default function Navbar() {
                     <Link to="/profile" className="navbar__user-dropdown-item" onClick={() => setUserMenuOpen(false)}>
                       <FiUser size={15} /> My Profile
                     </Link>
-                    {user?.role === "admin" && (
-                      <Link to="/admin" className="navbar__user-dropdown-item" onClick={() => setUserMenuOpen(false)}>
-                        <FiSettings size={15} /> Admin Panel
-                      </Link>
-                    )}
                     <div className="navbar__user-dropdown-divider" />
                     <button className="navbar__user-dropdown-logout" onClick={handleLogout}>
                       <FiLogOut size={15} /> Logout
@@ -211,13 +218,13 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
           ) : (
-            <Link to="/auth/login" className="navbar__login-btn">Login</Link>
+            <Link to="/auth/login" className="navbar__login-btn">{t("nav.login", "Login")}</Link>
           )}
 
           {/* Favorites */}
           <Link to="/favorites" className="navbar__fav-btn">
             <FiHeart size={15} />
-            <span>My Favorites</span>
+            <span>{t("nav.favorites", "My Favorites")}</span>
             {favorites.length > 0 && (
               <span className="navbar__fav-count">{favorites.length}</span>
             )}
@@ -280,7 +287,7 @@ export default function Navbar() {
                       className={`navbar__drawer-link ${pathname === link.path ? "active" : ""}`}
                       onClick={() => setMenuOpen(false)}
                     >
-                      {link.label}
+                      {label(link)}
                     </Link>
                   </motion.li>
                 ))}

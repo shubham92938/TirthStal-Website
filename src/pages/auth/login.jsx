@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiEye, FiEyeOff, FiArrowRight, FiArrowLeft } from "react-icons/fi";
-import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/pages/auth.css";
 
@@ -26,6 +26,7 @@ const templeSlides = [
 
 export default function Login() {
   const navigate     = useNavigate();
+  const location     = useLocation();
   const { login }    = useAuth();
 
   const [email,      setEmail]      = useState("");
@@ -62,7 +63,8 @@ export default function Login() {
       await login(email, password);
 
       // 3. Success → Home page pe navigate karo
-      navigate("/");
+      const from = location.state?.from;
+      navigate(from ? `${from.pathname}${from.search || ""}` : "/", { replace: true });
 
     } catch (err) {
       // 4. Error show karo
@@ -152,6 +154,7 @@ export default function Login() {
 
         <motion.div
           className="auth-form"
+          onKeyDown={(e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") handleLogin(); }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0  }}
           transition={{ duration: 0.4 }}
@@ -215,7 +218,7 @@ export default function Login() {
           </div>
 
           {/* Google */}
-          <button className="auth-form__google" type="button">
+          <button className="auth-form__google" type="button" onClick={() => toast("Google login is coming soon", { icon: "🚧" })}>
             <img
               src="https://www.google.com/favicon.ico"
               alt="Google" width={18} height={18}
@@ -244,13 +247,6 @@ export default function Login() {
             <Link to="/auth/signup">Sign up</Link>
           </p>
 
-          {/* Socials */}
-          <div className="auth-form__socials">
-            <button className="auth-social-btn" type="button"><FaFacebookF  size={16} /></button>
-            <button className="auth-social-btn" type="button"><FaTwitter    size={16} /></button>
-            <button className="auth-social-btn" type="button"><FaLinkedinIn size={16} /></button>
-            <button className="auth-social-btn" type="button"><FaInstagram  size={16} /></button>
-          </div>
 
         </motion.div>
       </div>

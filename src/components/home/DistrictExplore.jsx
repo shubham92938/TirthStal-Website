@@ -3,6 +3,8 @@ import { FiArrowRight, FiMapPin } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { districts } from "../../data/districts";
+import { getTemplesByDistrictName } from "../../data/store";
+import { districtImages } from "../../data/templeImages";
 import "../../styles/home/districtExplore.css";
 
 export default function DistrictExplore() {
@@ -13,7 +15,10 @@ export default function DistrictExplore() {
 
       {/* ── Header ── */}
       <div className="district__header">
-        <h2 className="district__title">Explore by District</h2>
+        <div>
+          <span className="section-eyebrow">Wander the heartland</span>
+          <h2 className="district__title">Explore by District</h2>
+        </div>
         <Link to="/districts" className="district__view-all">
           View All Districts <FiArrowRight size={15} />
         </Link>
@@ -37,7 +42,13 @@ export default function DistrictExplore() {
                   src={district.image}
                   alt={district.name}
                   className="district__img"
-                  onError={(e) => { e.target.src = "/images/placeholder-temple.jpg"; }}
+                  loading="lazy"
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    const alt = districtImages[district.slug];
+                    if (alt && el.src !== alt) el.src = alt;
+                    else { el.onerror = null; el.src = "/images/placeholder-temple.jpg"; }
+                  }}
                 />
                 <div className="district__overlay" />
                 <div className="district__text">
@@ -46,7 +57,7 @@ export default function DistrictExplore() {
                     {district.name}
                   </span>
                   <span className="district__count">
-                    {district.templeCount} Temples
+                    {(() => { const n = getTemplesByDistrictName(district.name).length; return n ? `${n} Temple${n > 1 ? "s" : ""}` : "District guide"; })()}
                   </span>
                 </div>
               </div>

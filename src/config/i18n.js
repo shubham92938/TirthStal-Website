@@ -34,7 +34,7 @@ const resources = {
 
       // ── Stats ──
       stats: {
-        temples:   "Total Temples",
+        temples:   "Temples Listed",
         districts: "Districts Covered",
         deities:   "Deities",
         devotees:  "Devotees Connected",
@@ -160,7 +160,7 @@ const resources = {
       },
       stats: {
         temples:   "कुल मंदिर",
-        districts: "जिले охваченные",
+        districts: "जिले कवर किए गए",
         deities:   "देवी-देवता",
         devotees:  "भक्त जुड़े",
       },
@@ -470,9 +470,14 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: "en",
+    lng: (typeof localStorage !== "undefined" && localStorage.getItem("tirthstal_lang")) || "en",
     fallbackLng: "en",
     interpolation: { escapeValue: false },
   });
+
+i18n.on("languageChanged", (lng) => {
+  try { localStorage.setItem("tirthstal_lang", lng); } catch { /* storage unavailable */ }
+  document.documentElement.lang = lng;
+});
 
 export default i18n;

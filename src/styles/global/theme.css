@@ -1,0 +1,204 @@
+/* ═══════════════════════════════════════════════════════════
+   TIRTHSTAL — "DIVINE EMBER" THEME
+   Loaded after every page stylesheet's base so it can lift the
+   whole site: richer palette, display typography, glow, motion.
+   ═══════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap');
+
+:root {
+  --saffron:      #c8610a;
+  --saffron-hot:  #ff7a1a;
+  --gold:         #f5b83d;
+  --gold-soft:    #ffe3a3;
+  --maroon:       #3b0a0a;
+  --maroon-mid:   #5a1212;
+  --maroon-deep:  #1f0505;
+  --cream:        #fff9f0;
+  --cream-deep:   #fdf0de;
+  --ink:          #1d1410;
+
+  --font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-body:    'Poppins', system-ui, sans-serif;
+
+  --grad-ember:   linear-gradient(135deg, #ff9a2e 0%, #e0560c 55%, #a8340a 100%);
+  --grad-gold:    linear-gradient(120deg, #ffe08a 0%, #f5b83d 45%, #e8891d 100%);
+  --grad-night:   linear-gradient(160deg, #1f0505 0%, #3b0a0a 55%, #5a1212 100%);
+
+  --shadow-soft:  0 6px 22px rgba(59, 10, 10, 0.08);
+  --shadow-lift:  0 18px 44px rgba(200, 97, 10, 0.22), 0 4px 12px rgba(59, 10, 10, 0.08);
+  --shadow-glow:  0 0 0 4px rgba(245, 184, 61, 0.28);
+
+  --ease-out:     cubic-bezier(.22, 1, .36, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background:
+    radial-gradient(1200px 500px at 85% -5%, rgba(255, 154, 46, 0.10), transparent 60%),
+    radial-gradient(900px 500px at -5% 30%, rgba(245, 184, 61, 0.10), transparent 60%),
+    var(--cream);
+  color: var(--ink);
+}
+
+::selection { background: var(--saffron); color: #fff; }
+
+/* Elegant scrollbar */
+* { scrollbar-width: thin; scrollbar-color: #d9a066 transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(#e8a15a, #c8610a); border-radius: 10px; border: 2px solid var(--cream); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Display typography ── */
+h1, h2,
+.temples-page__title, .fest-page__title, .blog-page__title, .dist-main__title,
+.map-page__title, .contact-page__title, .fav-page__title, .about-hero__title {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+h1 *, h2 * { font-family: inherit; }
+h1 { font-weight: 700; }
+
+/* ── Accessible focus ── */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid rgba(245, 184, 61, 0.9);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ── Buttons: tactile, alive ── */
+button { font-family: var(--font-body); -webkit-tap-highlight-color: transparent; }
+button:not(:disabled), a { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .6; }
+button:not(:disabled):active { transform: scale(.97); }
+
+/* ── Card system: consistent lift + glow ── */
+.tcard, .popular__card, .district__card, .fest-card, .blog-card, .dist-card,
+.fav-card, .deity__card, .fest-sidebar__box, .contact-sidebar__card,
+.temple-detail__sidebar-card, .map-sidebar__selected, .map-sidebar__nearby {
+  transition: transform .35s var(--ease-out), box-shadow .35s var(--ease-out), border-color .3s;
+  border-color: rgba(200, 97, 10, 0.10) !important;
+}
+.tcard:hover, .popular__card:hover, .district__card:hover, .fest-card:hover,
+.blog-card:hover, .dist-card:hover, .fav-card:hover {
+  box-shadow: var(--shadow-lift) !important;
+  border-color: rgba(200, 97, 10, 0.35) !important;
+}
+.tcard__img, .popular__img, .district__img, .fest-card__img, .blog-card__img, .dist-card__img {
+  transition: transform .8s var(--ease-out), filter .5s;
+}
+.tcard:hover .tcard__img, .popular__card:hover .popular__img, .district__card:hover .district__img,
+.fest-card:hover .fest-card__img, .blog-card:hover .blog-card__img, .dist-card:hover .dist-card__img {
+  transform: scale(1.09);
+  filter: saturate(1.15) contrast(1.03);
+}
+
+/* Shared "shine sweep" on image wraps */
+.tcard__img-wrap, .popular__img-wrap, .fest-card__img-wrap, .dist-card__img-wrap, .blog-card__img-wrap { position: relative; isolation: isolate; }
+.tcard__img-wrap::after, .popular__img-wrap::after, .fest-card__img-wrap::after,
+.dist-card__img-wrap::after, .blog-card__img-wrap::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform .9s var(--ease-out);
+}
+.tcard:hover .tcard__img-wrap::after, .popular__card:hover .popular__img-wrap::after,
+.fest-card:hover .fest-card__img-wrap::after, .dist-card:hover .dist-card__img-wrap::after,
+.blog-card:hover .blog-card__img-wrap::after { transform: translateX(120%); }
+
+/* Primary call-to-action buttons share the ember gradient */
+.dist-card__btn, .fav-empty__btn, .contact-form__submit, .auth-form__submit,
+.map-sidebar__details-btn, .map-filter__apply, .temples-page__drawer-apply,
+.map-page__drawer-apply, .temples-page__empty button, .blog-page__load-more button,
+.fest-page__load-more button, .district__load-more button, .fest-filter__apply-btn {
+  background: var(--grad-ember) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 6px 18px rgba(200, 97, 10, .32);
+  transition: transform .25s var(--ease-out), box-shadow .25s, filter .25s !important;
+}
+.dist-card__btn:hover, .fav-empty__btn:hover, .contact-form__submit:hover, .auth-form__submit:hover,
+.map-sidebar__details-btn:hover, .map-filter__apply:hover, .temples-page__empty button:hover,
+.blog-page__load-more button:hover, .fest-page__load-more button:hover,
+.district__load-more button:hover, .fest-filter__apply-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(200, 97, 10, .42);
+  filter: brightness(1.06);
+}
+
+/* ── Page sub-hero banners get a warm veil ── */
+.dist-main__hero-overlay {
+  background: linear-gradient(100deg, rgba(31,5,5,.88) 0%, rgba(59,10,10,.65) 55%, rgba(200,97,10,.25) 100%) !important;
+}
+
+/* ── Reveal helper (used with IntersectionObserver-free CSS) ── */
+@keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+@keyframes shimmer { to { background-position: 200% center; } }
+@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(245,184,61,.55); } 50% { box-shadow: 0 0 0 14px rgba(245,184,61,0); } }
+@keyframes riseEmber {
+  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+  10%  { opacity: .9; }
+  100% { transform: translate3d(var(--dx, 30px), -110vh, 0) scale(.3); opacity: 0; }
+}
+
+/* ── Scroll progress + back to top ── */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 3px; width: 100%; z-index: 10001;
+  transform-origin: 0 50%; transform: scaleX(0);
+  background: var(--grad-gold);
+  box-shadow: 0 0 12px rgba(245,184,61,.8);
+  pointer-events: none;
+}
+.to-top {
+  position: fixed; right: 22px; bottom: 22px; z-index: 9990;
+  width: 46px; height: 46px; border-radius: 50%; border: none;
+  background: var(--grad-ember); color: #fff; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 26px rgba(200,97,10,.45);
+  transition: transform .25s var(--ease-out), opacity .25s;
+}
+.to-top:hover { transform: translateY(-3px) scale(1.06); }
+
+/* ── Navbar upgrade ── */
+.navbar {
+  background: rgba(255, 252, 247, 0.82) !important;
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid rgba(200, 97, 10, .14) !important;
+}
+.navbar::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--saffron), var(--gold), transparent);
+  opacity: .0; transition: opacity .4s;
+}
+.navbar--scrolled::after { opacity: .9; }
+.navbar__logo-icon {
+  background: var(--grad-night); border-radius: 12px; width: 40px !important; height: 40px !important;
+  box-shadow: 0 6px 16px rgba(59,10,10,.35), inset 0 0 0 1px rgba(245,184,61,.5);
+  font-size: 20px !important;
+}
+.navbar__logo-name { font-family: var(--font-display); font-size: 24px !important; font-weight: 700 !important; color: var(--maroon) !important; letter-spacing: .01em; }
+.navbar__logo-sub  { letter-spacing: .06em; text-transform: uppercase; font-size: 8.5px !important; color: var(--saffron) !important; font-weight: 600; }
+.navbar__underline { background: var(--grad-ember) !important; height: 3px !important; box-shadow: 0 0 10px rgba(255,122,26,.6); }
+.navbar__fav-btn { background: var(--grad-night) !important; box-shadow: 0 6px 16px rgba(59,10,10,.3); }
+.navbar__login-btn:hover { background: var(--grad-ember) !important; border-color: transparent; }
+
+/* ── Footer upgrade ── */
+.footer { position: relative; overflow: hidden; background: var(--grad-night) !important; }
+.footer::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .07;
+  background-image: radial-gradient(circle at 20% 20%, #f5b83d 0 2px, transparent 3px), radial-gradient(circle at 70% 60%, #f5b83d 0 1.5px, transparent 2.5px);
+  background-size: 54px 54px, 80px 80px;
+}
+.footer > * { position: relative; }
+.footer__logo-name { font-family: var(--font-display); font-size: 28px !important; }
+
+/* ── Sticky filter bars get glass ── */
+.fest-filter, .blog-page__filters { backdrop-filter: blur(8px); }
+
+/* ── Respect reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+.section-eyebrow { display: block; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--saffron); margin-bottom: 4px; }

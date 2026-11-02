@@ -1,68 +1,149 @@
 import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import "leaflet/dist/leaflet.css";
 import {
-  FiHome, FiChevronRight, FiMapPin, FiClock,
-  FiHeart, FiShare2, FiCamera, FiInfo,
-  FiNavigation, FiPhone, FiCalendar
+  FiHome, FiChevronRight, FiMapPin, FiClock, FiHeart, FiShare2,
+  FiNavigation, FiGlobe, FiStar, FiSun, FiMoon, FiCheckCircle, FiArrowRight, FiMaximize2,
 } from "react-icons/fi";
-import { getTempleBySlug } from "../../data/temple";
+import toast from "react-hot-toast";
+import { getTempleBySlug, getNearbyTemples, FALLBACK_IMAGE } from "../../data/store";
+import { allFestivals } from "../../data/festivalStore";
+import { districts as districtData } from "../../data/districts";
+import { useFavorites } from "../../context/FavoritesContext";
 import "../../styles/temple/templeDetail.css";
 
-const tabs = ["Overview", "Gallery", "Location", "Festivals", "Nearby"];
+const tabs = ["Overview", "Aarti & Timings", "Gallery", "Location", "Festivals", "Nearby"];
 
-export default function TempleDetail() {
-  const { slug }                    = useParams();
-  const temple                      = getTempleBySlug(slug);
-  const [activeTab, setActiveTab]   = useState("Overview");
-  const [isFav,     setIsFav]       = useState(false);
-  const [imgIndex,  setImgIndex]    = useState(0);
+const humanise = (key) =>
+  key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()).trim();
+
+const pin = L.divIcon({
+  className: "",
+  html: `<div style="width:38px;height:38px;background:linear-gradient(135deg,#ff9a2e,#c8610a);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center"><span style="transform:rotate(45deg);font-size:15px">🛕</span></div>`,
+  iconSize: [38, 38], iconAnchor: [19, 38], popupAnchor: [0, -38],
+});
+
+// Find a festival page that matches a festival name written on a temple
+const findFestival = (name) => {
+  const n = name.toLowerCase();
+  const first = n.split(" ")[0];
+  return allFestivals.find((f) => {
+    const fn = f.name.toLowerCase();
+    return fn.includes(n) || n.includes(fn) || (first.length >= 5 && fn.includes(first));
+  });
+};
+
+// key on slug so tab / carousel state resets when moving temple → temple
+export default function TempleDetailPage() {
+  const { slug } = useParams();
+  return <TempleDetail key={slug} slug={slug} />;
+}
+
+function TempleDetail({ slug }) {
+  const temple = useMemo(() => getTempleBySlug(slug), [slug]);
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  const [activeTab, setActiveTab] = useState("Overview");
+  const [imgIndex, setImgIndex]   = useState(0);
+  const [lightbox, setLightbox]   = useState(-1);
+
+
+  const nearby = useMemo(() => (temple ? getNearbyTemples(temple, 4) : []), [temple]);
 
   if (!temple) {
     return (
       <div className="temple-detail__not-found">
         <span>🛕</span>
         <h2>Temple not found</h2>
+        <p>We couldn’t find a temple at this address.</p>
         <Link to="/temples">Back to Temples</Link>
       </div>
     );
   }
+
+  const fav = isFavorite(temple.id);
+  const images = temple.images;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${temple.coordinates.lat},${temple.coordinates.lng}`;
+  const dirUrl  = `https://www.google.com/maps/dir/?api=1&destination=${temple.coordinates.lat},${temple.coordinates.lng}`;
+
+  const onFav = () => {
+    toggleFavorite({
+      id: temple.id, name: temple.name, image: images[0],
+      location: `${temple.district}, ${temple.state}`, deity: temple.deity,
+      deityColor: temple.deityColor, rating: temple.rating, slug: temple.slug, type: "temple",
+    });
+    toast.success(fav ? "Removed from favorites" : `Saved ${temple.name}`, { icon: fav ? "💔" : "🧡" });
+  };
+
+  const onShare = async () => {
+    const url = window.location.href;
+    const data = { title: temple.name, text: `Explore ${temple.name} on Tirthstal`, url };
+    try {
+      if (navigator.share) { await navigator.share(data); return; }
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard");
+    } catch (err) {
+      if (err?.name !== "AbortError") toast.error("Couldn’t share — copy the link from the address bar");
+    }
+  };
 
   return (
     <div className="temple-detail">
 
       {/* ── Breadcrumb ── */}
       <div className="temple-detail__breadcrumb">
-        <Link to="/" className="breadcrumb__item">
-          <FiHome size={13} /> Home
-        </Link>
+        <Link to="/" className="breadcrumb__item"><FiHome size={13} /> Home</Link>
         <FiChevronRight size={13} className="breadcrumb__sep" />
         <Link to="/temples" className="breadcrumb__item">Temples</Link>
+        <FiChevronRight size={13} className="breadcrumb__sep" />
+        <Link to={`/temples?state=${encodeURIComponent(temple.state)}`} className="breadcrumb__item">{temple.state}</Link>
         <FiChevronRight size={13} className="breadcrumb__sep" />
         <span className="breadcrumb__item breadcrumb__item--active">{temple.name}</span>
       </div>
 
-      {/* ── Hero Image ── */}
+      {/* ── Hero ── */}
       <div className="temple-detail__hero">
-        <motion.img
-          key={imgIndex}
-          src={temple.images?.[imgIndex] || temple.image}
-          alt={temple.name}
-          className="temple-detail__hero-img"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        />
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={imgIndex}
+            src={images[imgIndex]}
+            alt={temple.name}
+            className="temple-detail__hero-img"
+            initial={{ opacity: 0, scale: 1.06 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }}
+          />
+        </AnimatePresence>
         <div className="temple-detail__hero-overlay" />
 
-        {/* Image Thumbnails */}
-        {temple.images?.length > 1 && (
+        <div className="temple-detail__hero-actions">
+          <button type="button" className={`temple-detail__fav-btn ${fav ? "active" : ""}`} onClick={onFav} aria-pressed={fav}>
+            <FiHeart size={17} />
+            {fav ? "Saved" : "Save"}
+          </button>
+          <button type="button" className="temple-detail__share-btn" onClick={onShare}>
+            <FiShare2 size={17} />
+            Share
+          </button>
+          <button type="button" className="temple-detail__share-btn" onClick={() => setLightbox(imgIndex)} aria-label="View full screen">
+            <FiMaximize2 size={17} />
+          </button>
+        </div>
+
+        {images.length > 1 && (
           <div className="temple-detail__thumbnails">
-            {temple.images.map((img, i) => (
+            {images.map((img, i) => (
               <img
-                key={i}
+                key={img}
                 src={img}
-                alt=""
+                alt={`${temple.name} view ${i + 1}`}
                 className={`temple-detail__thumb ${i === imgIndex ? "active" : ""}`}
                 onClick={() => setImgIndex(i)}
               />
@@ -70,66 +151,41 @@ export default function TempleDetail() {
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="temple-detail__hero-actions">
-          <button
-            className={`temple-detail__fav-btn ${isFav ? "active" : ""}`}
-            onClick={() => setIsFav(!isFav)}
-          >
-            <FiHeart size={17} />
-            {isFav ? "Saved" : "Save"}
-          </button>
-          <button className="temple-detail__share-btn">
-            <FiShare2 size={17} />
-            Share
-          </button>
-        </div>
-
-        {/* Hero Badge */}
         <div className="temple-detail__hero-badge">
-          <span
-            className="temple-detail__deity-tag"
-            style={{ background: `${temple.deityColor}22`, color: temple.deityColor }}
-          >
-            {temple.deity}
+          <span className="temple-detail__deity-tag" style={{ "--c": temple.deityColor }}>
+            🕉️ {temple.deity}
           </span>
+          {temple.type && <span className="temple-detail__deity-tag temple-detail__deity-tag--type">{temple.type}</span>}
         </div>
       </div>
 
+      {/* ── Title ── */}
+      <motion.div
+        className="temple-detail__title-wrap"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="temple-detail__title">{temple.name}</h1>
+        <div className="temple-detail__meta">
+          <span className="temple-detail__location"><FiMapPin size={15} />{temple.address}, {temple.state}</span>
+          <span className="temple-detail__timing"><FiClock size={15} />{temple.timings?.morning}</span>
+          <span className="temple-detail__rating"><FiStar size={14} /> {temple.rating} <em>({temple.reviews.toLocaleString("en-IN")} reviews)</em></span>
+        </div>
+      </motion.div>
+
       {/* ── Main Content ── */}
       <div className="temple-detail__body">
-
-        {/* ── Left ── */}
         <div className="temple-detail__left">
 
-          {/* Title */}
-          <motion.div
-            className="temple-detail__title-wrap"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <h1 className="temple-detail__title">{temple.name}</h1>
-            <div className="temple-detail__meta">
-              <span className="temple-detail__location">
-                <FiMapPin size={14} />
-                {temple.city}, {temple.district}
-              </span>
-              <span className="temple-detail__timing">
-                <FiClock size={14} />
-                {temple.timing || "5:00 AM – 10:00 PM"}
-              </span>
-              <span className="temple-detail__rating">
-                ⭐ {temple.rating} / 5
-              </span>
-            </div>
-          </motion.div>
-
-          {/* ── Tabs ── */}
-          <div className="temple-detail__tabs">
+          {/* Tabs */}
+          <div className="temple-detail__tabs" role="tablist">
             {tabs.map((tab) => (
               <button
                 key={tab}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
                 className={`temple-detail__tab ${activeTab === tab ? "active" : ""}`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -138,66 +194,93 @@ export default function TempleDetail() {
             ))}
           </div>
 
-          {/* ── Tab Content ── */}
           <motion.div
             key={activeTab}
             className="temple-detail__tab-content"
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-
             {/* Overview */}
             {activeTab === "Overview" && (
               <div className="temple-detail__overview">
                 <h3>About the Temple</h3>
-                <p>{temple.description || "This is one of the most sacred temples in India, attracting millions of devotees every year. The temple is known for its magnificent architecture and divine spiritual atmosphere."}</p>
-
+                <p>{temple.description}</p>
                 <h3>History</h3>
-                <p>{temple.history || "The temple has a rich history dating back centuries. It has been a center of religious and cultural significance, with many legends and stories associated with it."}</p>
+                <p>{temple.history}</p>
 
-                <h3>Significance</h3>
-                <p>{temple.significance || "This temple holds immense significance for devotees of all ages. It is believed that prayers offered here are answered and devotees experience divine blessings."}</p>
-
-                {/* Quick Info Cards */}
                 <div className="temple-detail__info-cards">
                   <div className="temple-detail__info-card">
-                    <FiClock size={18} className="info-card__icon" />
-                    <span className="info-card__label">Timings</span>
-                    <span className="info-card__value">{temple.timing || "5 AM – 10 PM"}</span>
+                    <FiSun size={20} className="info-card__icon" />
+                    <span className="info-card__label">Morning</span>
+                    <span className="info-card__value">{temple.timings?.morning}</span>
                   </div>
                   <div className="temple-detail__info-card">
-                    <FiCalendar size={18} className="info-card__icon" />
-                    <span className="info-card__label">Best Time</span>
-                    <span className="info-card__value">{temple.bestTime || "Oct – Mar"}</span>
+                    <FiMoon size={20} className="info-card__icon" />
+                    <span className="info-card__label">Evening</span>
+                    <span className="info-card__value">{temple.timings?.evening}</span>
                   </div>
                   <div className="temple-detail__info-card">
-                    <FiInfo size={18} className="info-card__icon" />
-                    <span className="info-card__label">Entry Fee</span>
-                    <span className="info-card__value">{temple.entryFee || "Free"}</span>
+                    <FiStar size={20} className="info-card__icon" />
+                    <span className="info-card__label">Rating</span>
+                    <span className="info-card__value">{temple.rating} / 5</span>
                   </div>
                   <div className="temple-detail__info-card">
-                    <FiCamera size={18} className="info-card__icon" />
-                    <span className="info-card__label">Photography</span>
-                    <span className="info-card__value">{temple.photography || "Allowed"}</span>
+                    <FiMapPin size={20} className="info-card__icon" />
+                    <span className="info-card__label">District</span>
+                    <span className="info-card__value">{temple.district}</span>
                   </div>
                 </div>
+
+                {temple.facilities?.length > 0 && (
+                  <>
+                    <h3>Facilities</h3>
+                    <div className="temple-detail__chips">
+                      {temple.facilities.map((f) => (
+                        <span key={f} className="temple-detail__chip"><FiCheckCircle size={14} /> {f}</span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Aarti & timings */}
+            {activeTab === "Aarti & Timings" && (
+              <div className="temple-detail__overview">
+                <h3>Darshan Timings</h3>
+                <div className="temple-detail__aarti">
+                  <div className="temple-detail__aarti-row"><FiSun /> <span>Morning</span><strong>{temple.timings?.morning}</strong></div>
+                  <div className="temple-detail__aarti-row"><FiMoon /> <span>Evening</span><strong>{temple.timings?.evening}</strong></div>
+                </div>
+                {temple.aartiTimings && (
+                  <>
+                    <h3>Aarti Schedule</h3>
+                    <div className="temple-detail__aarti">
+                      {Object.entries(temple.aartiTimings).map(([k, v]) => (
+                        <div key={k} className="temple-detail__aarti-row">🪔 <span>{humanise(k)}</span><strong>{v}</strong></div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                <p className="temple-detail__note">Timings can change on festivals and special days — please confirm with the temple before travelling.</p>
               </div>
             )}
 
             {/* Gallery */}
             {activeTab === "Gallery" && (
               <div className="temple-detail__gallery">
-                {(temple.images || [temple.image]).map((img, i) => (
-                  <motion.img
-                    key={i}
-                    src={img}
-                    alt={`${temple.name} ${i + 1}`}
-                    className="temple-detail__gallery-img"
+                {images.map((img, i) => (
+                  <motion.button
+                    type="button"
+                    key={img}
+                    className="temple-detail__gallery-btn"
                     whileHover={{ scale: 1.02 }}
-                    transition={{ duration: 0.2 }}
-                    onClick={() => setImgIndex(i)}
-                  />
+                    onClick={() => setLightbox(i)}
+                    aria-label={`Open photo ${i + 1}`}
+                  >
+                    <img src={img} alt={`${temple.name} ${i + 1}`} className="temple-detail__gallery-img" loading="lazy" />
+                  </motion.button>
                 ))}
               </div>
             )}
@@ -205,25 +288,33 @@ export default function TempleDetail() {
             {/* Location */}
             {activeTab === "Location" && (
               <div className="temple-detail__location-tab">
-                <div className="temple-detail__map-placeholder">
-                  <FiMapPin size={32} />
-                  <p>{temple.name}</p>
-                  <span>{temple.city}, {temple.district}</span>
-                  <a
-                    href={`https://maps.google.com/?q=${temple.name} ${temple.city}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="temple-detail__maps-btn"
+                <div className="temple-detail__map">
+                  <MapContainer
+                    center={[temple.coordinates.lat, temple.coordinates.lng]}
+                    zoom={13}
+                    scrollWheelZoom={false}
+                    style={{ height: "100%", width: "100%" }}
                   >
-                    <FiNavigation size={15} />
-                    Open in Google Maps
-                  </a>
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution="&copy; OpenStreetMap contributors"
+                    />
+                    <Marker position={[temple.coordinates.lat, temple.coordinates.lng]} icon={pin}>
+                      <Popup><strong>{temple.name}</strong><br />{temple.address}</Popup>
+                    </Marker>
+                  </MapContainer>
                 </div>
                 <div className="temple-detail__address-card">
                   <h4>Address</h4>
-                  <p>{temple.address || `${temple.name}, ${temple.city}, ${temple.district}`}</p>
-                  <h4>How to Reach</h4>
-                  <p>{temple.howToReach || "Well connected by road, rail and air. Nearest railway station and bus stand are within 5 km."}</p>
+                  <p>{temple.address}, {temple.district}, {temple.state}</p>
+                  <div className="temple-detail__address-actions">
+                    <a href={dirUrl} target="_blank" rel="noreferrer" className="temple-detail__maps-btn">
+                      <FiNavigation size={15} /> Get Directions
+                    </a>
+                    <a href={mapsUrl} target="_blank" rel="noreferrer" className="temple-detail__maps-btn temple-detail__maps-btn--ghost">
+                      Open in Google Maps
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
@@ -231,107 +322,91 @@ export default function TempleDetail() {
             {/* Festivals */}
             {activeTab === "Festivals" && (
               <div className="temple-detail__festivals">
-                {(temple.festivals || [
-                  { name: "Mahashivratri",  month: "February",  desc: "Grand celebration with lakhs of devotees." },
-                  { name: "Navratri",       month: "October",   desc: "Nine days of devotion and cultural programs." },
-                  { name: "Diwali",         month: "November",  desc: "Temple decorated with thousands of lamps." },
-                ]).map((f, i) => (
-                  <div key={i} className="temple-detail__festival-card">
-                    <div className="festival-card__month">{f.month}</div>
-                    <div className="festival-card__info">
-                      <h4>{f.name}</h4>
-                      <p>{f.desc}</p>
-                    </div>
-                  </div>
-                ))}
+                {(temple.festivals || []).map((name) => {
+                  const match = findFestival(name);
+                  const Wrapper = match ? Link : "div";
+                  return (
+                    <Wrapper
+                      key={name}
+                      {...(match ? { to: `/festivals/${match.slug}` } : {})}
+                      className="temple-detail__festival-card"
+                    >
+                      <div className="festival-card__month">{match ? match.month.split("/")[0] : "Festival"}</div>
+                      <div className="festival-card__info">
+                        <h4>{name}</h4>
+                        <p>{match ? match.duration : "Celebrated here with special rituals and aarti."}</p>
+                      </div>
+                      {match && <FiArrowRight className="festival-card__go" />}
+                    </Wrapper>
+                  );
+                })}
               </div>
             )}
 
             {/* Nearby */}
             {activeTab === "Nearby" && (
               <div className="temple-detail__nearby">
-                <p className="temple-detail__nearby-sub">
-                  Other temples near {temple.city}
-                </p>
+                <p className="temple-detail__nearby-sub">Closest temples to {temple.name}</p>
                 <div className="temple-detail__nearby-grid">
-                  {(temple.nearby || []).slice(0, 4).map((t, i) => (
-                    <Link
-                      key={i}
-                      to={`/temples/${t.slug}`}
-                      className="temple-detail__nearby-card"
-                    >
-                      <img src={t.image} alt={t.name} />
+                  {nearby.map((t) => (
+                    <Link key={t.id} to={`/temples/${t.slug}`} className="temple-detail__nearby-card">
+                      <img src={t.images[0]} alt={t.name} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }} />
                       <div>
                         <p className="nearby-card__name">{t.name}</p>
-                        <p className="nearby-card__dist">
-                          <FiMapPin size={11} /> {t.distance} km away
-                        </p>
+                        <p className="nearby-card__dist"><FiMapPin size={11} /> {t.distance.toLocaleString("en-IN")} km away · {t.district}</p>
                       </div>
+                      <FiArrowRight className="festival-card__go" />
                     </Link>
                   ))}
                 </div>
               </div>
             )}
-
           </motion.div>
         </div>
 
         {/* ── Right Sidebar ── */}
         <div className="temple-detail__sidebar">
-
-          {/* Contact Card */}
           <div className="temple-detail__sidebar-card">
-            <h4 className="sidebar-card__title">Temple Contact</h4>
+            <h4 className="sidebar-card__title">Plan your visit</h4>
             <ul className="sidebar-card__list">
-              <li>
-                <FiPhone size={14} />
-                <span>{temple.phone || "+91 98765 43210"}</span>
-              </li>
-              <li>
-                <FiMapPin size={14} />
-                <span>{temple.city}, {temple.district}</span>
-              </li>
-              <li>
-                <FiClock size={14} />
-                <span>{temple.timing || "5:00 AM – 10:00 PM"}</span>
-              </li>
+              <li><FiMapPin size={14} /><span>{temple.address}</span></li>
+              <li><FiSun size={14} /><span>{temple.timings?.morning}</span></li>
+              <li><FiMoon size={14} /><span>{temple.timings?.evening}</span></li>
             </ul>
-            <a
-              href={`https://maps.google.com/?q=${temple.name} ${temple.city}`}
-              target="_blank"
-              rel="noreferrer"
-              className="sidebar-card__directions-btn"
-            >
-              <FiNavigation size={14} />
-              Get Directions
+            <a href={dirUrl} target="_blank" rel="noreferrer" className="sidebar-card__directions-btn">
+              <FiNavigation size={14} /> Get Directions
             </a>
+            {temple.officialWebsite && (
+              <a href={temple.officialWebsite} target="_blank" rel="noreferrer" className="sidebar-card__web-btn">
+                <FiGlobe size={14} /> Official Website
+              </a>
+            )}
           </div>
 
-          {/* Visit Info */}
           <div className="temple-detail__sidebar-card">
-            <h4 className="sidebar-card__title">Visit Information</h4>
+            <h4 className="sidebar-card__title">Quick facts</h4>
             <ul className="sidebar-card__info-list">
-              <li>
-                <span className="info-list__label">Entry Fee</span>
-                <span className="info-list__value">{temple.entryFee || "Free"}</span>
-              </li>
-              <li>
-                <span className="info-list__label">Dress Code</span>
-                <span className="info-list__value">{temple.dressCode || "Traditional"}</span>
-              </li>
-              <li>
-                <span className="info-list__label">Best Season</span>
-                <span className="info-list__value">{temple.bestTime || "Oct – Mar"}</span>
-              </li>
-              <li>
-                <span className="info-list__label">Photography</span>
-                <span className="info-list__value">{temple.photography || "Allowed"}</span>
-              </li>
+              <li><span className="info-list__label">Deity</span><span className="info-list__value">{temple.deity}</span></li>
+              <li><span className="info-list__label">Type</span><span className="info-list__value">{temple.type}</span></li>
+              <li><span className="info-list__label">District</span><span className="info-list__value">{temple.district}</span></li>
+              <li><span className="info-list__label">State</span><span className="info-list__value">{temple.state}</span></li>
             </ul>
+            {districtData.some((d) => d.slug === temple.district.toLowerCase()) ? (
+              <Link to={`/districts/${temple.district.toLowerCase()}`} className="sidebar-card__link">Explore {temple.district} district <FiArrowRight size={13} /></Link>
+            ) : (
+              <Link to={`/temples?district=${encodeURIComponent(temple.district)}`} className="sidebar-card__link">More temples in {temple.district} <FiArrowRight size={13} /></Link>
+            )}
           </div>
-
         </div>
       </div>
+
+      <Lightbox
+        open={lightbox >= 0}
+        index={Math.max(lightbox, 0)}
+        close={() => setLightbox(-1)}
+        slides={images.map((src) => ({ src }))}
+        controller={{ closeOnBackdropClick: true }}
+      />
     </div>
   );
 }

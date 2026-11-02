@@ -2,7 +2,7 @@ import { templeImages } from "./templeImages";
 
 export const templesData = {
   
-  "Maharastra":{
+  "Maharashtra": {
         "Pune": [
       {
         id: 101,
