@@ -32,6 +32,20 @@ export default defineConfig({
       }
     }
   ],
+  build: {
+    // Split big third-party libs into their own long-cacheable chunks
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (/node_modules\/(react|react-dom|scheduler|react-router|react-router-dom)\//.test(id)) return 'react';
+          if (id.includes('framer-motion') || id.includes('motion-dom') || id.includes('motion-utils')) return 'motion';
+          if (id.includes('i18next')) return 'i18n';
+          if (id.includes('fuse.js')) return 'fuse';
+        },
+      },
+    },
+  },
   server: {
     host: true,
     port: 5173,

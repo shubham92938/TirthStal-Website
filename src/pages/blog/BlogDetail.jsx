@@ -83,7 +83,7 @@ export default function BlogDetail() {
 
           {/* Meta */}
           <div className="blog-detail__meta">
-            <img
+            <img loading="lazy" decoding="async"
               src={blog.author.avatar}
               alt={blog.author.name}
               className="blog-detail__avatar"
@@ -101,7 +101,7 @@ export default function BlogDetail() {
 
         {/* Right — Hero Image + TOC */}
         <div className="blog-detail__top-right">
-          <img
+          <img loading="lazy" decoding="async"
             src={blog.image}
             alt={blog.title}
             className="blog-detail__hero-img"
@@ -232,7 +232,7 @@ export default function BlogDetail() {
                   to={`/blog/${r.slug}`}
                   className="blog-detail__related-item"
                 >
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={r.image}
                     alt={r.title}
                     onError={(e) => { e.target.src = "/images/hero-temple.jpg"; }}
