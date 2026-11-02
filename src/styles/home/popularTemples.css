@@ -1,191 +1,60 @@
-.popular {
-  padding: 40px 60px;
-  background: #fff;
-  border-bottom: 1px solid #f0ede8;
+.popular { max-width: 1320px; margin: 0 auto; padding: 60px 48px 40px; }
+.popular__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.popular__title { font-size: clamp(32px, 4vw, 48px); font-weight: 700; color: var(--maroon); line-height: 1.05; }
+.popular__controls { display: flex; align-items: center; gap: 10px; }
+.popular__nav {
+  width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid #f0c9a0; background: #fff; color: var(--saffron);
+  display: flex; align-items: center; justify-content: center; transition: all .25s;
 }
-
-/* Header */
-.popular__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.popular__title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
+.popular__nav:hover:not(:disabled) { background: var(--grad-ember); color: #fff; border-color: transparent; transform: scale(1.08); }
+.popular__nav:disabled { opacity: .35; }
 .popular__view-all {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  color: #c8610a;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Poppins', sans-serif;
-  cursor: pointer;
-  transition: gap 0.2s;
+  display: inline-flex; align-items: center; gap: 6px; padding: 11px 20px; border-radius: 50px; margin-left: 6px;
+  background: var(--grad-night); color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 8px 20px rgba(59,10,10,.3);
+  transition: gap .25s, transform .25s;
 }
-.popular__view-all:hover { gap: 10px; }
+.popular__view-all:hover { gap: 10px; transform: translateY(-2px); }
 
-/* Grid */
 .popular__grid {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  position: relative;
+  display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 4px 28px; margin: 0 -4px;
+  scrollbar-width: none;
 }
+.popular__grid::-webkit-scrollbar { display: none; }
 
-/* Card */
 .popular__card {
-  flex: 0 0 calc(20% - 16px);
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid #f0ede8;
-  background: #fff;
-  cursor: pointer;
-  transition: box-shadow 0.25s;
+  flex: 0 0 280px; scroll-snap-align: start; border-radius: 24px; overflow: hidden; background: #fff;
+  border: 1px solid rgba(200,97,10,.1); box-shadow: 0 6px 20px rgba(59,10,10,.07);
 }
-.popular__card:hover {
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
-}
-
-/* Image */
-.popular__img-wrap {
-  position: relative;
-  width: 100%;
-  height: 180px;
-  overflow: hidden;
-}
-.popular__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-.popular__card:hover .popular__img {
-  transform: scale(1.06);
-}
-
-/* Favorite Button */
+.popular__img-wrap { position: relative; height: 230px; overflow: hidden; background: #f3e8d9; }
+.popular__img-wrap > a { display: block; height: 100%; }
+.popular__img { width: 100%; height: 100%; object-fit: cover; }
+.popular__veil { position: absolute; inset: 0; pointer-events: none; z-index: 1; background: linear-gradient(to top, rgba(31,5,5,.65), transparent 55%); }
 .popular__fav {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #fff;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #aaa;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  transition: color 0.2s, transform 0.2s;
+  position: absolute; top: 14px; right: 14px; z-index: 3; width: 38px; height: 38px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,.92); color: #9a8a7e; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2); transition: transform .25s cubic-bezier(.34,1.56,.64,1), color .2s;
 }
-.popular__fav:hover { transform: scale(1.1); }
+.popular__fav:hover { transform: scale(1.18); color: #e53e3e; }
 .popular__fav.active { color: #e53e3e; }
-
-/* Info */
-.popular__info {
-  padding: 12px 14px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.popular__fav.active svg { fill: #e53e3e; stroke: #e53e3e; }
+.popular__rating {
+  position: absolute; left: 14px; bottom: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 50px; font-size: 12px; font-weight: 700; color: #fff;
+  background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); backdrop-filter: blur(8px);
 }
+.popular__rating svg { fill: var(--gold); color: var(--gold); }
 
-.popular__name {
-  font-size: 14px;
-  font-weight: 650;
-  color: #1a1a1a;
-  line-height: 1.3;
-}
+.popular__info { display: block; padding: 16px 18px 20px; }
+.popular__name { font-size: 16px; font-weight: 700; color: #1d1410; line-height: 1.3; margin-bottom: 12px; min-height: 42px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color .2s; }
+.popular__card:hover .popular__name { color: var(--saffron); }
+.popular__bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.popular__city { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: #8a7a6e; font-weight: 500; }
+.popular__city svg { color: var(--saffron); }
+.popular__deity { font-size: 11.5px; font-weight: 700; padding: 4px 11px; border-radius: 50px; white-space: nowrap; }
 
-.popular__bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.popular__city {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #888;
-  font-weight: 500;
-}
-
-/* Deity Badge */
-.popular__deity {
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 50px;
-  white-space: nowrap;
-}
-
-/* Next Arrow */
-.popular__arrow {
-  position: absolute;
-  right: -18px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid #f0ede8;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #333;
-  transition: background 0.2s;
-}
-.popular__arrow:hover { background: #c8610a; color: #fff; }
-
-
-@media (max-width: 768px) {
-  .popular {
-    padding: 24px 16px;
-  }
-  .popular__grid {
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 8px;
-  }
-  .popular__grid::-webkit-scrollbar { display: none; }
-
-  .popular__card {
-    flex: 0 0 160px;
-    min-width: 160px;
-    scroll-snap-align: start;
-  }
-  .popular__img-wrap { height: 150px; }
-  .popular__name {
-    font-size: 13px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.3;
-  }
-  .popular__city  { font-size: 11px; }
-  .popular__deity { font-size: 10.5px; }
-  .popular__arrow { display: none; }
-}
-
-@media (max-width: 380px) {
-  .popular__card   { flex: 0 0 145px; min-width: 145px; }
-  .popular__img-wrap { height: 130px; }
+@media (max-width: 720px) {
+  .popular { padding: 40px 18px 24px; }
+  .popular__card { flex-basis: 78vw; }
+  .popular__nav { display: none; }
+  .popular__view-all { margin-left: 0; }
 }

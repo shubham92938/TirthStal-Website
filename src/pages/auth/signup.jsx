@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { FiEye, FiEyeOff, FiArrowRight, FiArrowLeft } from "react-icons/fi";
-import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/pages/auth.css";
 
@@ -31,7 +31,7 @@ export default function Signup() {
   const [form, setForm]           = useState({ name: "", email: "", password: "", confirm: "" });
   const [showPass,  setShowPass]  = useState(false);
   const [showConf,  setShowConf]  = useState(false);
-  const [loading]                 = useState(false);
+  const [loading,  setLoading]  = useState(false);
   const [error,     setError]     = useState("");
   const [slideIndex,setSlideIndex]= useState(0);
 
@@ -39,25 +39,36 @@ export default function Signup() {
     setForm((p) => ({ ...p, [field]: val }));
 
   const handleSignup = async () => {
-  if (!form.name || !form.email || !form.password || !form.confirm) {
-    setError("Please fill in all fields.");
-    return;
-  }
+    if (!form.name.trim() || !form.email || !form.password || !form.confirm) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) {
+      setError("Please enter a valid email.");
+      return;
+    }
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (form.password !== form.confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-  if (form.password !== form.confirm) {
-    setError("Passwords do not match.");
-    return;
-  }
-
-  try {
-    await register(form.name,form.email,form.password),
-
-    navigate("auth/login");
-
-  } catch (err) {
-    setError(err.message);
-  }
-};
+    setError("");
+    setLoading(true);
+    try {
+      // registering also signs the user in (token is stored by the service)
+      await register(form.name.trim(), form.email.trim(), form.password);
+      toast.success("Welcome to Tirthstal 🙏");
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const prevSlide = () =>
     setSlideIndex((p) => (p === 0 ? templeSlides.length - 1 : p - 1));
@@ -133,6 +144,7 @@ export default function Signup() {
 
         <motion.div
           className="auth-form"
+          onKeyDown={(e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") handleSignup(); }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
@@ -198,7 +210,7 @@ export default function Signup() {
           </div>
 
           {/* Google */}
-          <button className="auth-form__google">
+          <button className="auth-form__google" type="button" onClick={() => toast("Google sign-up is coming soon", { icon: "🚧" })}>
             <img src="https://www.google.com/favicon.ico" alt="Google" width={18} height={18} />
             Sign up with Google
           </button>
@@ -208,6 +220,7 @@ export default function Signup() {
             className="auth-form__submit"
             onClick={handleSignup}
             disabled={loading}
+            type="button"
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>
@@ -217,12 +230,6 @@ export default function Signup() {
             <Link to="/auth/login">Login</Link>
           </p>
 
-          <div className="auth-form__socials">
-            <button className="auth-social-btn"><FaFacebookF size={16} /></button>
-            <button className="auth-social-btn"><FaTwitter size={16} /></button>
-            <button className="auth-social-btn"><FaLinkedinIn size={16} /></button>
-            <button className="auth-social-btn"><FaInstagram size={16} /></button>
-          </div>
 
         </motion.div>
       </div>

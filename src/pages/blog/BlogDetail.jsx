@@ -11,12 +11,7 @@ import "../../styles/pages/blog.css";
 export default function BlogDetail() {
   const { slug }                      = useParams();
   const blog                          = getBlogBySlug(slug);
-  const [activeSection, setActive]    = useState("");
-
-  useEffect(() => {
-    if (blog?.sections?.length) setActive(blog.sections[0].id);
-    window.scrollTo(0, 0);
-  }, [slug, blog]);
+  const [activeSection, setActive]    = useState(blog?.sections?.[0]?.id || "");
 
   useEffect(() => {
     const handleScroll = () => {

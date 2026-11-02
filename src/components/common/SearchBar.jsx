@@ -3,19 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { FiSearch, FiArrowRight, FiX } from "react-icons/fi";
-import { getAllTemples } from "../../data/temple";
-import { templesData } from "../../data/temple";
+import { allTemples, templeStates, deityFamilies } from "../../data/store";
+import { districts as districtList } from "../../data/districts";
 import "../../styles/common/searchbar.css";
 
-// ── सारा data तैयार करो searching के लिए ──
-const allTemples  = getAllTemples("Madhya Pradesh");
-const allStates   = Object.keys(templesData);
-const allDistricts = [...new Set(allTemples.map((t) => t.district))];
-const allDeities  = [...new Set(allTemples.map((t) =>
-  t.deity.replace("Lord ", "").replace("Goddess ", "")
-))];
-
-// ── Search Items बनाओ ──
+// ── Build the searchable index from the shared temple store ──
 const searchItems = [
   // Temples
   ...allTemples.map((t) => ({
@@ -25,42 +17,38 @@ const searchItems = [
     deity:    t.deity,
     slug:     t.slug,
     icon:     "🛕",
-    action:   "navigate",
     path:     `/temples/${t.slug}`,
     keywords: `${t.name} ${t.deity} ${t.district} ${t.type} ${t.state}`,
   })),
 
   // States
-  ...allStates.map((s) => ({
+  ...templeStates.map((s) => ({
     type:     "state",
     label:    `Temples in ${s}`,
     sub:      `All temples in ${s}`,
     icon:     "📍",
-    action:   "filter",
     path:     `/temples?state=${encodeURIComponent(s)}`,
     keywords: `${s} state temples`,
   })),
 
   // Districts
-  ...allDistricts.map((d) => ({
+  ...districtList.map((d) => ({
     type:     "district",
-    label:    `${d} District`,
-    sub:      `Explore temples in ${d}`,
+    label:    `${d.name} District`,
+    sub:      `Explore temples in ${d.name}`,
     icon:     "🗺️",
-    action:   "filter",
-    path:     `/districts/${d.toLowerCase()}`,
-    keywords: `${d} district temples`,
+    path:     `/districts/${d.slug}`,
+    keywords: `${d.name} district temples`,
   })),
 
   // Deities
-  ...allDeities.map((d) => ({
+  ...deityFamilies.map((d) => ({
     type:     "deity",
-    label:    `${d} Temples`,
-    sub:      `All temples of ${d}`,
+    label:    `${d.name} Temples`,
+    sub:      `${d.count} temples of ${d.name}`,
     icon:     "🔱",
-    action:   "filter",
-    path:     `/temples?deity=${encodeURIComponent(d)}`,
-    keywords: `${d} deity temples`,
+    path:     `/temples?deity=${encodeURIComponent(d.name)}`,
+    keywords: `${d.name} deity temples`,
   })),
 
   // Popular Searches
@@ -101,6 +89,7 @@ export default function SearchBar({ placeholder = "Search temples, deities, plac
   // ── Search Logic ──
   useEffect(() => {
     if (query.trim().length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResults([]);
       setCorrection(null);
       return;
@@ -237,7 +226,7 @@ export default function SearchBar({ placeholder = "Search temples, deities, plac
                 onClick={() => { setQuery(correction); }}
               >
                 <span>🔍</span>
-                <span>क्या आप ढूंढ रहे थे: </span>
+                <span>Did you mean: </span>
                 <strong>"{correction}"</strong>
                 <span>?</span>
               </div>
@@ -323,7 +312,7 @@ export default function SearchBar({ placeholder = "Search temples, deities, plac
             {query.trim().length >= 2 && displayResults.length === 0 && (
               <div className="smartsearch__empty">
                 <span>🔍</span>
-                <p>कोई result नहीं मिला "<strong>{query}</strong>" के लिए</p>
+                <p>No results found for "<strong>{query}</strong>"</p>
                 <button onClick={handleSearch}>
                   Search anyway <FiArrowRight size={13} />
                 </button>

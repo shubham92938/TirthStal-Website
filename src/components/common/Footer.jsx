@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { SITE, SOCIALS } from "../../config/site";
+import { subscribeNewsletter, isEmail } from "../../services/outreachService";
 import { FiHeart, FiMail, FiPhone, FiMapPin, FiInstagram, FiFacebook, FiTwitter, FiYoutube } from "react-icons/fi";
 import { motion } from "framer-motion";
 import "../../styles/common/footer.css";
@@ -14,22 +18,40 @@ const quickLinks = [
 ];
 
 const exploreLinks = [
-  { label: "Shiva Temples",   path: "/temples" },
-  { label: "Vishnu Temples",  path: "/temples" },
-  { label: "Devi Temples",    path: "/temples" },
-  { label: "Jyotirlingas",    path: "/temples" },
-  { label: "Sai Temples",     path: "/temples" },
-  { label: "Ganesh Temples",  path: "/temples" },
+  { label: "Shiva Temples",   path: "/temples?deity=Shiva" },
+  { label: "Vishnu Temples",  path: "/temples?deity=Vishnu" },
+  { label: "Devi Temples",    path: "/temples?deity=Devi" },
+  { label: "Jyotirlingas",    path: "/temples?type=Jyotirlinga" },
+  { label: "Hanuman Temples", path: "/temples?deity=Hanuman" },
+  { label: "Ganesh Temples",  path: "/temples?deity=Ganesh" },
 ];
 
 const socials = [
-  { icon: <FiInstagram size={18} />, path: "#", label: "Instagram" },
-  { icon: <FiFacebook  size={18} />, path: "#", label: "Facebook"  },
-  { icon: <FiTwitter   size={18} />, path: "#", label: "Twitter"   },
-  { icon: <FiYoutube   size={18} />, path: "#", label: "YouTube"   },
+  { icon: <FiInstagram size={18} />, path: SOCIALS.instagram, label: "Instagram" },
+  { icon: <FiFacebook  size={18} />, path: SOCIALS.facebook,  label: "Facebook"  },
+  { icon: <FiTwitter   size={18} />, path: SOCIALS.twitter,   label: "Twitter"   },
+  { icon: <FiYoutube   size={18} />, path: SOCIALS.youtube,   label: "YouTube"   },
 ];
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [busy,  setBusy]  = useState(false);
+
+  const onSubscribe = async (e) => {
+    e.preventDefault();
+    if (!isEmail(email)) { toast.error("Please enter a valid email address"); return; }
+    setBusy(true);
+    try {
+      const { delivered } = await subscribeNewsletter(email.trim());
+      toast.success(delivered ? "Subscribed! Jai Shri Ram 🙏" : "Thanks! We’ve noted your email 🙏");
+      setEmail("");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <footer className="footer">
 
@@ -61,6 +83,8 @@ export default function Footer() {
               <motion.a
                 key={s.label}
                 href={s.path}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="footer__social-btn"
                 aria-label={s.label}
                 whileHover={{ y: -3 }}
@@ -106,11 +130,11 @@ export default function Footer() {
           <ul className="footer__contact-list">
             <li>
               <FiMail size={15} className="footer__contact-icon" />
-              <span>info@tirthstal.com</span>
+              <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
             </li>
             <li>
               <FiPhone size={15} className="footer__contact-icon" />
-              <span>+91 98765 43210</span>
+              <a href={`tel:${SITE.mobile.replace(/\s/g, "")}`}>{SITE.mobile}</a>
             </li>
             <li>
               <FiMapPin size={15} className="footer__contact-icon" />
@@ -121,10 +145,16 @@ export default function Footer() {
           {/* Newsletter */}
           <div className="footer__newsletter">
             <p className="footer__newsletter-label">Subscribe to our newsletter</p>
-            <div className="footer__newsletter-input">
-              <input type="email" placeholder="Enter your email" />
-              <button>Subscribe</button>
-            </div>
+            <form className="footer__newsletter-input" onSubmit={onSubscribe} noValidate>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                aria-label="Email address"
+              />
+              <button type="submit" disabled={busy}>{busy ? "…" : "Subscribe"}</button>
+            </form>
           </div>
         </div>
 
@@ -138,9 +168,9 @@ export default function Footer() {
           for devotees.
         </p>
         <div className="footer__bottom-links">
-          <Link to="#">Privacy Policy</Link>
-          <Link to="#">Terms of Service</Link>
-          <Link to="#">Sitemap</Link>
+          <Link to="/legal/privacy">Privacy Policy</Link>
+          <Link to="/legal/terms">Terms of Service</Link>
+          <Link to="/legal/sitemap">Sitemap</Link>
         </div>
       </div>
 

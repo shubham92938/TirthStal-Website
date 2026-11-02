@@ -1,0 +1,12 @@
+.legal { max-width: 900px; margin: 0 auto; padding: 24px 24px 70px; }
+.legal__crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8a7a6e; margin-bottom: 14px; }
+.legal__crumb a { display: flex; align-items: center; gap: 5px; } .legal__crumb a:hover { color: var(--saffron); }
+.legal__title { font-size: clamp(38px, 5vw, 60px); color: var(--maroon); margin-bottom: 26px; }
+.legal__body section { background: #fff; border: 1px solid #f2dcc0; border-radius: 20px; padding: 22px 26px; margin-bottom: 14px; }
+.legal__body h3, .legal__card h3 { font-family: var(--font-display); font-size: 24px; color: var(--maroon); margin-bottom: 6px; }
+.legal__body p { font-size: 15px; line-height: 1.8; color: #4a3a30; }
+.legal__updated { font-size: 13px !important; color: #9a8a7e !important; margin-top: 18px; }
+.legal__map { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+.legal__card { background: #fff; border: 1px solid #f2dcc0; border-radius: 20px; padding: 22px; }
+.legal__card li { margin-top: 8px; }
+.legal__card a { color: #4a3a30; font-size: 14.5px; font-weight: 500; } .legal__card a:hover { color: var(--saffron); text-decoration: underline; }

@@ -103,3 +103,11 @@
   .goseva-cta { padding: 20px 12px; }
   .goseva-cta__title { font-size: 21px; }
 }
+
+/* ── Expressive upgrade ── */
+.goseva-cta { background: transparent; border: none; padding: 50px 48px; }
+.goseva-cta__banner { max-width: 1320px; margin: 0 auto; border-radius: 30px; min-height: 380px; box-shadow: 0 30px 70px rgba(59,10,10,.28); }
+.goseva-cta__title { font-family: var(--font-display); font-size: clamp(34px, 4.4vw, 56px) !important; line-height: 1.05; }
+.goseva-cta__btn { box-shadow: 0 10px 26px rgba(245,184,61,.35); transition: transform .25s, box-shadow .25s; }
+.goseva-cta__btn:hover { transform: translateY(-3px); }
+@media (max-width: 720px) { .goseva-cta { padding: 30px 14px; } }

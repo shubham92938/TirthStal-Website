@@ -1,301 +1,247 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  FiSearch, FiMapPin, FiHeart, FiChevronRight,
-  FiHome, FiChevronDown, FiChevronLeft
+  FiSearch, FiMapPin, FiChevronRight, FiHome, FiChevronLeft,
+  FiSun, FiNavigation, FiStar, FiArrowRight,
 } from "react-icons/fi";
+import Select from "../../components/common/Select";
+import TempleCard from "../../components/temple/TempleCard";
 import { districts } from "../../data/districts";
-import { templesData } from "../../data/temple";
-import "../../styles/pages/districtsPage.css";
+import { districtImages } from "../../data/templeImages";
+import { getTemplesByDistrictName, sortTemples, SORT_OPTIONS, FALLBACK_IMAGE } from "../../data/store";
+import "../../styles/pages/districtPage.css";
 
 const ITEMS_PER_PAGE = 8;
 
-const sortOptions = ["Popularity","Name A-Z","Rating","Most Visited"];
+const imgFor = (d) => districtImages[d.slug] || FALLBACK_IMAGE;
+const onImgError = (e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; };
 
-export default function DistrictPage() {
-  const { district: slug } = useParams();
+const withCounts = districts.map((d) => ({ ...d, count: getTemplesByDistrictName(d.name).length }));
 
-  const [search,    setSearch]    = useState("");
-  const [page,      setPage]      = useState(1);
-  const [favorites, setFavorites] = useState([]);
-  const [sortOpen,  setSortOpen]  = useState(false);
-  const [sortBy,    setSortBy]    = useState("Popularity");
+/* ───────── /districts  (overview of every district) ───────── */
+function DistrictsOverview() {
+  const [q, setQ] = useState("");
+  const [onlyTemples, setOnlyTemples] = useState(false);
 
-  const currentDistrict = districts.find((d) => d.slug === slug) || districts[0];
-  const stateTemples    = templesData?.[currentDistrict?.state] || {};
-  const distTemples     = stateTemples?.[currentDistrict?.name] || [];
-
-  const filteredDistricts = districts.filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(distTemples.length / ITEMS_PER_PAGE);
-  const paginated  = distTemples.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-
-  const toggleFav = (id) =>
-    setFavorites((p) => p.includes(id) ? p.filter((f) => f !== id) : [...p, id]);
-
-  useEffect(() => { setPage(1); }, [slug]);
-
-  const getPaginationPages = () => {
-    const pages = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1, 2, 3);
-      if (page > 4) pages.push("...");
-      if (page > 3 && page < totalPages - 2) pages.push(page);
-      if (page < totalPages - 3) pages.push("...");
-      pages.push(totalPages);
-    }
-    return pages;
-  };
+  const list = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return withCounts
+      .filter((d) => (!term || d.name.toLowerCase().includes(term)) && (!onlyTemples || d.count > 0))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [q, onlyTemples]);
 
   return (
-    <div className="dist-page">
+    <div className="dp-page">
+      <section className="dp-hero dp-hero--overview">
+        <div className="dp-hero__inner">
+          <div className="dp-crumb"><Link to="/"><FiHome size={13} /> Home</Link><FiChevronRight size={13} /><span>Districts</span></div>
+          <span className="section-eyebrow" style={{ color: "var(--gold)" }}>Wander the heartland</span>
+          <h1>Explore by <em>District</em></h1>
+          <p>{districts.length} districts, each with its own sacred stories. Pick one to see its temples, best season and how to reach.</p>
+        </div>
+      </section>
 
-      {/* ── Layout ── */}
-      <div className="dist-page__layout">
-
-        {/* ── Left Sidebar ── */}
-        <aside className="dist-sidebar">
-          <div className="dist-sidebar__header">
-            <span className="dist-sidebar__header-icon">🛕</span>
-            <h3>Districts in {currentDistrict?.state}</h3>
+      <div className="dp-container">
+        <div className="dp-toolbar">
+          <div className="dp-search">
+            <FiSearch size={16} />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search districts…" aria-label="Search districts" />
           </div>
+          <label className="dp-toggle">
+            <input type="checkbox" checked={onlyTemples} onChange={(e) => setOnlyTemples(e.target.checked)} />
+            <span /> With listed temples only
+          </label>
+          <span className="dp-toolbar__count">{list.length} districts</span>
+        </div>
 
-          {/* Search */}
-          <div className="dist-sidebar__search">
-            <input
-              type="text"
-              placeholder="Search district..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <FiSearch size={15} className="dist-sidebar__search-icon" />
+        {list.length === 0 ? (
+          <div className="dp-empty"><span>🗺️</span><h3>No district matches “{q}”</h3>
+            <button type="button" onClick={() => { setQ(""); setOnlyTemples(false); }}>Clear filters</button></div>
+        ) : (
+          <div className="dp-grid dp-grid--districts">
+            {list.map((d, i) => (
+              <motion.div key={d.slug} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.04 }}>
+                <Link to={`/districts/${d.slug}`} className="dp-dcard">
+                  <img src={imgFor(d)} alt={d.name} loading="lazy" onError={onImgError} />
+                  <div className="dp-dcard__shade" />
+                  <div className="dp-dcard__text">
+                    <strong><FiMapPin size={14} /> {d.name}</strong>
+                    <span>{d.count ? `${d.count} temple${d.count > 1 ? "s" : ""} listed` : "District guide"}</span>
+                  </div>
+                  <span className="dp-dcard__go"><FiArrowRight /></span>
+                </Link>
+              </motion.div>
+            ))}
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
-          {/* District List */}
-          <ul className="dist-sidebar__list">
-            {filteredDistricts.map((d) => (
-              <li key={d.id}>
-                <Link
-                  to={`/districts/${d.slug}`}
-                  className={`dist-sidebar__item ${d.slug === slug ? "active" : ""}`}
-                >
-                  <span className="dist-sidebar__item-name">{d.name}</span>
-                  <span className="dist-sidebar__item-count">{d.templeCount}</span>
+/* ───────── /districts/:slug ───────── */
+function DistrictDetail({ district }) {
+  const [search, setSearch] = useState("");
+  const [dSearch, setDSearch] = useState("");
+  const [sortBy, setSortBy] = useState("Popularity");
+  const [page, setPage] = useState(1);
+
+  const temples = useMemo(() => getTemplesByDistrictName(district.name), [district]);
+  const shown = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = q ? temples.filter((t) => [t.name, t.type, t.deity, t.address].some((x) => x?.toLowerCase().includes(q))) : temples;
+    return sortTemples(list, sortBy);
+  }, [temples, search, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(shown.length / ITEMS_PER_PAGE));
+  const current = Math.min(page, totalPages);
+  const paginated = shown.slice((current - 1) * ITEMS_PER_PAGE, current * ITEMS_PER_PAGE);
+
+  const sidebarList = withCounts
+    .filter((d) => d.state === district.state && d.name.toLowerCase().includes(dSearch.toLowerCase()))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  const avgRating = temples.length ? (temples.reduce((s, t) => s + (t.rating || 0), 0) / temples.length).toFixed(1) : "–";
+  const deities = new Set(temples.map((t) => t.deity)).size;
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+    .filter((p) => p === 1 || p === totalPages || Math.abs(p - current) <= 1)
+    .reduce((acc, p, i, arr) => { if (i && p - arr[i - 1] > 1) acc.push("…"); acc.push(p); return acc; }, []);
+
+  return (
+    <div className="dp-page">
+      <section className="dp-hero">
+        <img className="dp-hero__bg" src={imgFor(district)} alt="" onError={onImgError} />
+        <div className="dp-hero__shade" />
+        <div className="dp-hero__inner">
+          <div className="dp-crumb">
+            <Link to="/"><FiHome size={13} /> Home</Link><FiChevronRight size={13} />
+            <Link to="/districts">Districts</Link><FiChevronRight size={13} />
+            <span>{district.name}</span>
+          </div>
+          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            {district.name} <em>District</em>
+          </motion.h1>
+          <p>{district.description.split(". ").slice(0, 2).join(". ")}.</p>
+          <div className="dp-pills">
+            <span>📍 {district.state}</span>
+            <span>🛕 {temples.length} listed temple{temples.length === 1 ? "" : "s"}</span>
+            <span><FiSun size={13} /> {district.bestTimeToVisit}</span>
+          </div>
+        </div>
+      </section>
+
+      <div className="dp-container dp-layout">
+        <aside className="dp-side">
+          <h3>Districts in {district.state}</h3>
+          <div className="dp-search dp-search--sm">
+            <FiSearch size={14} />
+            <input value={dSearch} onChange={(e) => setDSearch(e.target.value)} placeholder="Search district…" aria-label="Search districts" />
+          </div>
+          <ul>
+            {sidebarList.map((d) => (
+              <li key={d.slug}>
+                <Link to={`/districts/${d.slug}`} className={d.slug === district.slug ? "active" : ""}>
+                  <span>{d.name}</span><b>{d.count}</b>
                 </Link>
               </li>
             ))}
+            {sidebarList.length === 0 && <li className="dp-side__none">No district found</li>}
           </ul>
-
-          {/* View All */}
-          <button className="dist-sidebar__view-all">
-            <FiMapPin size={14} />
-            View All Districts
-          </button>
+          <Link to="/districts" className="dp-side__all"><FiMapPin size={14} /> View all districts</Link>
         </aside>
 
-        {/* ── Main Content ── */}
-        <main className="dist-main">
-
-          {/* Breadcrumb */}
-          <div className="dist-main__breadcrumb">
-            <Link to="/"><FiHome size={13} /> Home</Link>
-            <FiChevronRight size={13} />
-            <Link to="/districts">{currentDistrict?.state}</Link>
-            <FiChevronRight size={13} />
-            <span>{currentDistrict?.name} District</span>
+        <main className="dp-main">
+          <div className="dp-stats">
+            <div><b>{temples.length}</b><span>Listed temples</span></div>
+            <div><b>{deities || "–"}</b><span>Deities</span></div>
+            <div><b>{avgRating}</b><span>Avg. rating</span></div>
+            <div><b>{district.famousFor?.length || 0}</b><span>Famous attractions</span></div>
           </div>
 
-          {/* Hero */}
- 
-<div className="dist-main__hero">
-  <img
-    // src={currentDistrict?.image || "./images/hero-temples.jpeg"}
-    // alt={currentDistrict?.name}
-    src="./images/hero-temples.jpeg"
-    alt={currentDistrict?.name}
-    className="dist-main__hero-bg"
-    onError={(e) => e.target.src = "./images/hero-temples.jpeg"}
-  />
-  <div className="dist-main__hero-overlay" />
-  <div className="dist-main__hero-content">
-    <motion.h1
-      className="dist-main__title"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      {currentDistrict?.name} District
-      <span className="dist-main__title-state">, {currentDistrict?.state}</span>
-    </motion.h1>
-    <motion.p
-      className="dist-main__desc"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.1 }}
-    >
-      Explore {distTemples.length} temples in {currentDistrict?.name} district.
-      Discover ancient temples, spiritual places and seek blessings from the divine.
-    </motion.p>
-
-    {/* Quick Info Pills */}
-    <motion.div
-      className="dist-main__hero-pills"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.2 }}
-    >
-      <span className="hero-pill">🛕 {distTemples.length} Temples</span>
-      <span className="hero-pill">📍 {currentDistrict?.state}</span>
-      <span className="hero-pill">🗺️ {currentDistrict?.bestTimeToVisit || "Oct - Mar"}</span>
-    </motion.div>
-  </div>
-</div>
-
-          {/* Stats Bar */}
-          <div className="dist-main__stats">
-            <div className="dist-main__stats-left">
-              <div className="dist-stat">
-                <span className="dist-stat__icon">🛕</span>
-                <div>
-                  <p className="dist-stat__num">{distTemples.length}</p>
-                  <p className="dist-stat__label">Total Temples</p>
-                </div>
-              </div>
-              <div className="dist-stat__divider" />
-              <div className="dist-stat">
-                <span className="dist-stat__icon">🗺️</span>
-                <div>
-                  <p className="dist-stat__num">8</p>
-                  <p className="dist-stat__label">Tehsils</p>
-                </div>
-              </div>
-              <div className="dist-stat__divider" />
-              <div className="dist-stat">
-                <span className="dist-stat__icon">📍</span>
-                <div>
-                  <p className="dist-stat__num">1,234</p>
-                  <p className="dist-stat__label">Villages Covered</p>
-                </div>
-              </div>
-              <div className="dist-stat__divider" />
-              <div className="dist-stat">
-                <span className="dist-stat__icon">👥</span>
-                <div>
-                  <p className="dist-stat__num">58K+</p>
-                  <p className="dist-stat__label">Devotees Visited</p>
-                </div>
-              </div>
+          <div className="dp-info">
+            <div className="dp-info__card">
+              <h3><FiStar size={16} /> Famous for</h3>
+              <div className="dp-chips">{district.famousFor?.map((f) => <span key={f}>{f}</span>)}</div>
+              <p>{district.description}</p>
             </div>
-
-            {/* Sort */}
-            <div className="dist-main__sort" onClick={() => setSortOpen(!sortOpen)}>
-              <span>Sort by: {sortBy}</span>
-              <FiChevronDown size={14} className={sortOpen ? "rotated" : ""} />
-              {sortOpen && (
-                <ul className="dist-main__sort-dropdown">
-                  {sortOptions.map((s) => (
-                    <li
-                      key={s}
-                      className={sortBy === s ? "selected" : ""}
-                      onClick={(e) => { e.stopPropagation(); setSortBy(s); setSortOpen(false); }}
-                    >
-                      {s}
-                    </li>
-                  ))}
-                </ul>
+            <div className="dp-info__card dp-info__card--reach">
+              <h3><FiNavigation size={16} /> How to reach</h3>
+              <p>{district.howToReach}</p>
+              {district.coordinates && (
+                <a href={`https://www.google.com/maps/search/?api=1&query=${district.coordinates.lat},${district.coordinates.lng}`}
+                  target="_blank" rel="noopener noreferrer" className="dp-link">
+                  Open in Google Maps <FiArrowRight size={14} />
+                </a>
               )}
             </div>
           </div>
 
-          {/* Temple Grid */}
-          <div className="dist-grid">
-            {paginated.map((temple, i) => (
-              <motion.div
-                key={temple.id}
-                className="dist-card"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
-              >
-                {/* Image */}
-                <div className="dist-card__img-wrap">
-                  <img
-                    src={temple.images?.[0] || "/images/placeholder-temple.jpg"}
-                    alt={temple.name}
-                    className="dist-card__img"
-                    onError={(e) => { e.target.src = "/images/placeholder-temple.jpg"; }}
-                  />
-                  <button
-                    className={`dist-card__fav ${favorites.includes(temple.id) ? "active" : ""}`}
-                    onClick={() => toggleFav(temple.id)}
-                  >
-                    <FiHeart size={14} />
-                  </button>
+          <div className="dp-head">
+            <div>
+              <span className="section-eyebrow">Sacred places</span>
+              <h2>Temples in {district.name}</h2>
+            </div>
+            {temples.length > 0 && (
+              <div className="dp-head__tools">
+                <div className="dp-search dp-search--sm">
+                  <FiSearch size={14} />
+                  <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search temples…" aria-label="Search temples" />
                 </div>
-
-                {/* Info */}
-                <div className="dist-card__info">
-                  <h3 className="dist-card__name">{temple.name}</h3>
-                  <span
-                    className="dist-card__type"
-                    style={{ background: `${temple.deityColor}18`, color: temple.deityColor }}
-                  >
-                    {temple.type}
-                  </span>
-                  <div className="dist-card__location">
-                    <FiMapPin size={12} />
-                    <span>{temple.address}</span>
-                  </div>
-                  <Link
-                    to={`/temples/${temple.slug}`}
-                    className="dist-card__btn"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
+                <Select value={sortBy} options={SORT_OPTIONS} onChange={(v) => { setSortBy(v); setPage(1); }} ariaLabel="Sort temples" />
+              </div>
+            )}
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="dist-pagination">
-              <button
-                className="dist-pagination__arrow"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                <FiChevronLeft size={16} />
-              </button>
-
-              {getPaginationPages().map((p, i) => (
-                <button
-                  key={i}
-                  className={`dist-pagination__btn ${p === page ? "active" : ""} ${p === "..." ? "dots" : ""}`}
-                  onClick={() => p !== "..." && setPage(p)}
-                >
-                  {p}
-                </button>
-              ))}
-
-              <button
-                className="dist-pagination__arrow"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                <FiChevronRight size={16} />
-              </button>
+          {temples.length === 0 ? (
+            <div className="dp-empty">
+              <span>🛕</span>
+              <h3>Temples for {district.name} are coming soon</h3>
+              <p>We're adding temples district by district. Meanwhile, explore {district.name}'s highlights above{district.topTemples?.length ? ` — ${district.topTemples.slice(0, 3).join(", ")}` : ""}.</p>
+              <Link to="/temples" className="dp-btn">Browse all temples</Link>
+            </div>
+          ) : shown.length === 0 ? (
+            <div className="dp-empty"><span>🔍</span><h3>No temple matches “{search}”</h3>
+              <button type="button" onClick={() => setSearch("")}>Clear search</button></div>
+          ) : (
+            <div className="dp-grid">
+              {paginated.map((t, i) => <TempleCard key={t.id} temple={t} index={i} />)}
             </div>
           )}
 
+          {totalPages > 1 && (
+            <nav className="dp-pager" aria-label="Pagination">
+              <button type="button" onClick={() => setPage(Math.max(1, current - 1))} disabled={current === 1} aria-label="Previous page"><FiChevronLeft /></button>
+              {pages.map((p, i) => p === "…"
+                ? <span key={`d${i}`}>…</span>
+                : <button key={p} type="button" className={p === current ? "active" : ""} onClick={() => setPage(p)}>{p}</button>)}
+              <button type="button" onClick={() => setPage(Math.min(totalPages, current + 1))} disabled={current === totalPages} aria-label="Next page"><FiChevronRight /></button>
+            </nav>
+          )}
         </main>
       </div>
     </div>
   );
+}
+
+export default function DistrictPage() {
+  const { district: slug } = useParams();
+  if (!slug) return <DistrictsOverview />;
+  const district = districts.find((d) => d.slug === slug);
+
+  if (!district) {
+    return (
+      <div className="dp-page">
+        <div className="dp-container dp-empty" style={{ marginTop: 80 }}>
+          <span>🗺️</span>
+          <h3>We couldn't find a district called “{slug}”</h3>
+          <Link to="/districts" className="dp-btn">See all districts</Link>
+        </div>
+      </div>
+    );
+  }
+  // key → local state (search / sort / page) resets when switching district
+  return <DistrictDetail key={district.slug} district={district} />;
 }

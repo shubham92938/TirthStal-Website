@@ -164,3 +164,13 @@
   .district__name  { font-size: 12px; }
   .district__count { font-size: 10px; padding: 1px 6px; }
 }
+/* ── Expressive upgrade ── */
+.district { max-width: none; padding: 70px 48px 80px; background: linear-gradient(180deg, var(--cream-deep, #fdf0de), var(--cream, #fff9f0)); border: none; }
+.district > * { max-width: 1320px; margin-left: auto; margin-right: auto; }
+.district__header { align-items: flex-end; }
+.district__title { font-size: clamp(32px, 4vw, 48px); line-height: 1.05; color: var(--maroon, #3b0a0a); }
+.district__view-all { padding: 10px 18px; border-radius: 50px; border: 1.5px solid #f0c9a0; text-decoration: none; }
+.district__view-all:hover { background: var(--saffron); color: #fff; border-color: var(--saffron); }
+.district__card { border-radius: 22px; }
+.district__card-link { display: block; }
+@media (max-width: 720px) { .district { padding: 50px 18px 56px; } }
