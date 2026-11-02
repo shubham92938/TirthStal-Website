@@ -1,6 +1,6 @@
 import API from "./api";
 
-// The backend does not expose /contact or /newsletter yet. Until it does,
+// The backend does not expose /newsletter yet. Until it does,
 // submissions fall back to a local outbox so nothing the visitor typed is
 // lost and the UI can still give honest feedback.
 const OUTBOX_KEY = "tirthstal_outbox";
@@ -27,7 +27,6 @@ const send = async (kind, path, payload) => {
   }
 };
 
-export const sendContactMessage = (form) => send("contact", "/contact", form);
 export const subscribeNewsletter = (email) => send("newsletter", "/newsletter", { email });
 
 export const isEmail = (v = "") => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());

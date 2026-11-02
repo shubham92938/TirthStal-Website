@@ -4,8 +4,8 @@ import { SITE } from "../config/site";
 import "../styles/pages/legal.css";
 
 const sitemap = [
-  ["Explore", [["Home", "/"], ["All Temples", "/temples"], ["Districts", "/districts"], ["Temple Map", "/map"], ["Festivals", "/festivals"]]],
-  ["Serve & Learn", [["Goseva", "/goseva"], ["Blog & Stories", "/blog"], ["About Us", "/about"], ["Contact", "/contact"]]],
+  ["Explore", [["Home", "/"], ["All Temples", "/temples"], ["Festivals", "/festivals"]]],
+  ["Serve & Learn", [["Goseva", "/goseva"], ["Blog & Stories", "/blog"]]],
   ["Your account", [["Login", "/auth/login"], ["Sign up", "/auth/signup"], ["My Favorites", "/favorites"], ["My Profile", "/profile"]]],
   ["Legal", [["Privacy Policy", "/legal/privacy"], ["Terms of Service", "/legal/terms"]]],
 ];

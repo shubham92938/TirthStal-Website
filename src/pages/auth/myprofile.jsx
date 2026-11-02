@@ -14,6 +14,7 @@ import { useFavorites } from "../../context/FavoritesContext";
 import { updateProfile } from "../../services/authServices";
 import Select from "../../components/common/Select";
 import { FALLBACK_IMAGE } from "../../data/store";
+import { SITE } from "../../config/site";
 import "../../styles/pages/profilePage.css";
 
 const tabs = [
@@ -367,9 +368,9 @@ export default function Profile() {
                   <p style={{ fontSize: 13.5, color: "#7a6a5e", margin: "0 0 12px" }}>
                     To delete your account and data, send us a request and we'll take care of it.
                   </p>
-                  <Link to="/contact" className="profile-settings__delete-btn" style={{ display: "inline-block", textDecoration: "none" }}>
+                  <a href={`mailto:${SITE.email}?subject=Account%20deletion%20request`} className="profile-settings__delete-btn" style={{ display: "inline-block", textDecoration: "none" }}>
                     Request Account Deletion
-                  </Link>
+                  </a>
                 </div>
 
               </div>

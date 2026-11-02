@@ -14,13 +14,9 @@ import "../../styles/common/navbar.css";
 const navLinks = [
   { label: "Home",       key: "home",      path: "/"          },
   { label: "Temples",    key: "temples",   path: "/temples"   },
-  { label: "Districts",  key: "districts", path: "/districts" },
   { label: "Festivals",  key: "festivals", path: "/festivals" },
   { label: "Goseva",     key: null,        path: "/goseva"    },
-  { label: "Temple Map", key: "map",       path: "/map"       },
   { label: "Blog",       key: "blog",      path: "/blog"      },
-  { label: "About Us",   key: "about",     path: "/about"     },
-  { label: "Contact",    key: "contact",   path: "/contact"   },
 ];
 
 const languages = [
