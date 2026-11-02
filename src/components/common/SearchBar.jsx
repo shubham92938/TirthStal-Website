@@ -204,7 +204,7 @@ export default function SearchBar({ placeholder = "Search temples, deities, plac
           </button>
         )}
         <button className="smartsearch__btn" onClick={handleSearch}>
-          Search <FiArrowRight size={14} />
+          <span>Search</span> <FiArrowRight size={14} />
         </button>
       </div>
 

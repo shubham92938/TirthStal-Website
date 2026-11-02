@@ -94,7 +94,7 @@
 .hero__wave { position: absolute; left: 0; right: 0; bottom: -1px; height: 60px; z-index: 1; background: var(--cream, #fff9f0); clip-path: ellipse(75% 100% at 50% 100%); }
 
 @media (max-width: 960px) {
-  .hero__inner { grid-template-columns: 1fr; padding: 56px 28px 30px; gap: 36px; }
+  .hero__inner { grid-template-columns: minmax(0, 1fr); padding: 56px 28px 30px; gap: 36px; }
   .hero__feature { justify-self: start; max-width: 420px; }
   .hero__mandala { width: 520px; height: 520px; margin-top: -260px; right: -220px; }
 }

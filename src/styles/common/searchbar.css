@@ -29,6 +29,7 @@
 }
 
 .smartsearch__input {
+  min-width: 0;
   flex: 1;
   border: none;
   outline: none;
@@ -53,6 +54,7 @@
 .smartsearch__clear:hover { color: #e53e3e; }
 
 .smartsearch__btn {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -206,6 +208,7 @@
 
 @media (max-width: 480px) {
   .smartsearch__btn span { display: none; }
+  .smartsearch__btn { min-width: 44px; }
   .smartsearch__btn { padding: 11px 12px; border-radius: 0 8px 8px 0; }
   .smartsearch__item { padding: 9px 12px; gap: 8px; }
   .smartsearch__item-icon { width: 30px; height: 30px; font-size: 14px; }

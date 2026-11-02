@@ -89,7 +89,7 @@
 /* Blog Grid */
 .blog-page__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
   margin-bottom: 36px;
 }
@@ -172,7 +172,7 @@
 /* Top Section */
 .blog-detail__top {
   display: grid;
-  grid-template-columns: 1fr 480px;
+  grid-template-columns: minmax(0, 1fr) 480px;
   gap: 40px;
   margin-bottom: 48px;
   align-items: start;
@@ -259,7 +259,7 @@
 /* Body */
 .blog-detail__body {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: minmax(0, 1fr) 280px;
   gap: 40px;
   align-items: start;
 }
@@ -386,13 +386,13 @@
 /* ── Tablet (≤ 1024px) ── */
 @media (max-width: 1024px) {
   .blog-page { padding: 32px 24px 48px; }
-  .blog-page__grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .blog-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
   .blog-page__featured { height: 320px; }
   .blog-page__featured-title { font-size: 22px; }
 
   .blog-detail { padding: 24px 24px 48px; }
-  .blog-detail__top { grid-template-columns: 1fr 360px; gap: 28px; }
-  .blog-detail__body { grid-template-columns: 1fr 240px; gap: 28px; }
+  .blog-detail__top { grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; }
+  .blog-detail__body { grid-template-columns: minmax(0, 1fr) 240px; gap: 28px; }
 }
 
 /* ── Mobile (≤ 768px) ── */
@@ -441,15 +441,15 @@
   }
 
   /* Grid — 1 column */
-  .blog-page__grid { grid-template-columns: 1fr; gap: 16px; }
+  .blog-page__grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .blog-card__img-wrap { height: 180px; }
 
   /* Blog detail */
   .blog-detail { padding: 16px 16px 40px; }
-  .blog-detail__top { grid-template-columns: 1fr; gap: 20px; }
+  .blog-detail__top { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .blog-detail__hero-img { height: 220px; border-radius: 12px; }
   .blog-detail__title { font-size: 24px; }
-  .blog-detail__body { grid-template-columns: 1fr; }
+  .blog-detail__body { grid-template-columns: minmax(0, 1fr); }
   .blog-detail__sidebar { position: static; }
   .blog-detail__info-card { float: none; width: 100%; margin: 0 0 20px 0; }
   .blog-detail__nav { flex-direction: column; gap: 16px; }

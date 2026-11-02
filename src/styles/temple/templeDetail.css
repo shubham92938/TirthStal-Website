@@ -65,7 +65,7 @@
 .temple-detail__overview p { font-size: 15.5px; color: #4a3a30; line-height: 1.85; }
 .temple-detail__note { margin-top: 20px; padding: 14px 18px; border-radius: 14px; background: #fff6ea; border-left: 4px solid var(--saffron); font-size: 13.5px !important; }
 
-.temple-detail__info-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+.temple-detail__info-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
 .temple-detail__info-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 20px 10px; border-radius: 20px; text-align: center; background: linear-gradient(160deg, #fff, #fff4e6); border: 1px solid #f2dcc0; transition: transform .3s var(--ease-out), box-shadow .3s; }
 .temple-detail__info-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lift); }
 .info-card__icon { color: var(--saffron); }
@@ -136,12 +136,12 @@ a.temple-detail__festival-card:hover .festival-card__go, .temple-detail__nearby-
 .sidebar-card__link { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13.5px; font-weight: 700; color: var(--saffron); }
 .sidebar-card__link:hover { gap: 10px; }
 
-@media (max-width: 1024px) { .temple-detail__body { grid-template-columns: 1fr; } .temple-detail__sidebar { position: static; display: grid; grid-template-columns: 1fr 1fr; } .temple-detail__info-cards { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1024px) { .temple-detail__body { grid-template-columns: minmax(0, 1fr); } .temple-detail__sidebar { position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .temple-detail__info-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) {
   .temple-detail { padding: 0 14px 50px; }
   .temple-detail__hero { height: 340px; border-radius: 22px; }
   .temple-detail__thumbnails { display: none; }
-  .temple-detail__sidebar { grid-template-columns: 1fr; }
+  .temple-detail__sidebar { grid-template-columns: minmax(0, 1fr); }
   .temple-detail__hero-actions { top: 14px; right: 14px; }
   .temple-detail__fav-btn, .temple-detail__share-btn { padding: 8px 14px; }
 }

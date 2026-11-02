@@ -1,153 +1,60 @@
-import { useState }         from "react";
-import { Link }             from "react-router-dom";
-import { motion }           from "framer-motion";
-import { FiMail, FiArrowLeft, FiSend } from "react-icons/fi";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { FiMail, FiSend, FiAlertCircle, FiArrowLeft } from "react-icons/fi";
 import { forgotPasswordAPI } from "../../services/authServices";
-import "../../styles/pages/auth.css";
+import AuthLayout from "../../components/auth/AuthLayout";
+import AuthField from "../../components/auth/AuthField";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function ForgotPassword() {
-  const [email,     setEmail]     = useState("");
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState("");
-  const [sent,      setSent]      = useState(false);
+  const [email,   setEmail]   = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState("");
+  const [fieldErr, setFieldErr] = useState("");
+  const [sent,    setSent]    = useState(false);
 
-  const handleSubmit = async () => {
-    if (!email) {
-      setError("Please enter your email address.");
-      return;
-    }
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!EMAIL_RE.test(email.trim())) { setFieldErr("Enter a valid email address"); return; }
+    setFieldErr(""); setError(""); setLoading(true);
     try {
-      await forgotPasswordAPI(email);
+      await forgotPasswordAPI(email.trim());
       setSent(true);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        "Something went wrong. Please try again."
-      );
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page auth-page--centered">
-
-      <motion.div
-        className="auth-forgot"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0  }}
-        transition={{ duration: 0.4  }}
-      >
-        {/* Logo */}
-        <div className="auth-forgot__logo">
-          <span>🛕</span>
-          <p>Tirthstal</p>
+    <AuthLayout
+      variant="recover"
+      title={sent ? "Check your inbox" : "Forgot password?"}
+      subtitle={sent ? null : "Enter your email and we'll send you a link to set a new password."}
+      footer={<Link to="/auth/login"><FiArrowLeft size={13} style={{ verticalAlign: "-2px" }} /> Back to sign in</Link>}
+    >
+      {sent ? (
+        <div className="ax-success">
+          <div className="ax-success__icon">📧</div>
+          <p>We've sent a reset link to<br /><strong>{email}</strong></p>
+          <div className="ax-note">
+            ⏰ The link expires in <b>15 minutes</b><br />
+            📁 Check your spam folder if you don't see it
+          </div>
+          <button type="button" className="ax-link-btn" onClick={() => { setSent(false); setEmail(""); }}>Didn't receive it? Try again</button>
         </div>
-
-        {!sent ? (
-          <>
-            {/* Icon */}
-            <div className="auth-forgot__icon">
-              <FiMail size={28} />
-            </div>
-
-            <h1 className="auth-forgot__title">Forgot Password?</h1>
-            <p className="auth-forgot__sub">
-              No worries! Enter your email address and we'll send you
-              a link to reset your password.
-            </p>
-
-            {/* Error */}
-            {error && (
-              <motion.div
-                className="auth-form__error"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                ⚠️ {error}
-              </motion.div>
-            )}
-
-            {/* Email Input */}
-            <div className="auth-forgot__field">
-              <label>Email Address</label>
-              <div className="auth-forgot__input-wrap">
-                <FiMail size={16} className="auth-forgot__input-icon" />
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                />
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              className="auth-forgot__btn"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="auth-form__loading">
-                  <span className="auth-spinner" /> Sending...
-                </span>
-              ) : (
-                <>
-                  <FiSend size={15} />
-                  Send Reset Link
-                </>
-              )}
-            </button>
-
-            {/* Back to Login */}
-            <Link to="/auth/login" className="auth-forgot__back">
-              <FiArrowLeft size={14} />
-              Back to Login
-            </Link>
-          </>
-        ) : (
-          // ── Success State ──
-          <motion.div
-            className="auth-forgot__success"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1    }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="auth-forgot__success-icon">📧</div>
-            <h2>Check your email!</h2>
-            <p>
-              We've sent a password reset link to<br />
-              <strong>{email}</strong>
-            </p>
-            <div className="auth-forgot__success-note">
-              <p>⏰ Link expires in <strong>15 minutes</strong></p>
-              <p>📁 Check your spam folder if you don't see it</p>
-            </div>
-
-            <button
-              className="auth-forgot__resend"
-              onClick={() => { setSent(false); setEmail(""); }}
-            >
-              Didn't receive? Try again
-            </button>
-
-            <Link to="/auth/login" className="auth-forgot__back">
-              <FiArrowLeft size={14} />
-              Back to Login
-            </Link>
-          </motion.div>
-        )}
-      </motion.div>
-    </div>
+      ) : (
+        <form onSubmit={handleSubmit} noValidate>
+          {error && <div className="ax-alert" role="alert"><FiAlertCircle size={17} /> {error}</div>}
+          <AuthField label="Email address" type="email" icon={<FiMail size={18} />} autoComplete="email" inputMode="email"
+            value={email} onChange={(v) => { setEmail(v); setFieldErr(""); }} error={fieldErr} />
+          <button type="submit" className="ax-btn" disabled={loading}>
+            {loading ? <><span className="ax-spin" /> Sending…</> : <><FiSend size={17} /> Send reset link</>}
+          </button>
+        </form>
+      )}
+    </AuthLayout>
   );
 }
