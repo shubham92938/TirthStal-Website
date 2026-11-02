@@ -37,7 +37,7 @@ const searchItems = [
     label:    `${d.name} District`,
     sub:      `Explore temples in ${d.name}`,
     icon:     "🗺️",
-    path:     `/districts/${d.slug}`,
+    path:     `/temples?district=${encodeURIComponent(d.name)}`,
     keywords: `${d.name} district temples`,
   })),
 
@@ -55,7 +55,7 @@ const searchItems = [
   { type: "popular", label: "Jyotirlinga Temples",   sub: "12 Sacred Jyotirlingas",    icon: "⭐", path: "/temples?type=Jyotirlinga",   keywords: "jyotirlinga shiva sacred" },
   { type: "popular", label: "Shakti Peeth Temples",  sub: "51 Shakti Peethas",          icon: "⚡", path: "/temples?type=Shakti Peeth",  keywords: "shakti peeth devi goddess" },
   { type: "popular", label: "UNESCO Heritage Sites", sub: "World Heritage Temples",     icon: "🏛️", path: "/temples?type=UNESCO",         keywords: "unesco heritage khajuraho" },
-  { type: "popular", label: "Temples near Ujjain",   sub: "Temples in Ujjain district", icon: "📍", path: "/districts/ujjain",           keywords: "ujjain temples nearby" },
+  { type: "popular", label: "Temples near Ujjain",   sub: "Temples in Ujjain district", icon: "📍", path: "/temples?district=Ujjain",   keywords: "ujjain temples nearby" },
 ];
 
 // ── Fuse.js Setup ──
@@ -176,7 +176,7 @@ export default function SearchBar({ placeholder = "Search temples, deities, plac
     { type: "state",   label: "Temples in MP",         icon: "📍", path: "/temples?state=Madhya Pradesh" },
     { type: "deity",   label: "Shiva Temples",         icon: "🔱", path: "/temples?deity=Shiva"        },
     { type: "deity",   label: "Vishnu Temples",        icon: "🪷", path: "/temples?deity=Vishnu"       },
-    { type: "district",label: "Ujjain District",       icon: "🗺️", path: "/districts/ujjain"           },
+    { type: "district",label: "Ujjain District",       icon: "🗺️", path: "/temples?district=Ujjain" },
   ];
 
   const displayResults = query.trim().length >= 2 ? results : [];

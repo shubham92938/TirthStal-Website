@@ -18,13 +18,9 @@ const Temples        = lazy(() => import("./pages/temples/index"));
 const TempleDetail   = lazy(() => import("./pages/temples/[slug]"));
 const Festivals      = lazy(() => import("./pages/festivals/index"));
 const FestivalDetail = lazy(() => import("./pages/festivals/[festival]"));
-const DistrictPage   = lazy(() => import("./pages/districts/DistrictPage"));
 const Blog           = lazy(() => import("./pages/blog/index"));
 const BlogDetail     = lazy(() => import("./pages/blog/BlogDetail"));
-const MapPage        = lazy(() => import("./pages/map"));
 const Favorites      = lazy(() => import("./pages/favorites/index"));
-const About          = lazy(() => import("./pages/about/index"));
-const Contact        = lazy(() => import("./pages/contact/Contact"));
 const Goseva         = lazy(() => import("./pages/goseva/index"));
 const Login          = lazy(() => import("./pages/auth/login"));
 const Signup         = lazy(() => import("./pages/auth/signup"));
@@ -58,15 +54,10 @@ export default function App() {
           <Route path="/temples/:slug"       element={<TempleDetail />} />
           <Route path="/festivals"           element={<Festivals />}    />
           <Route path="/festivals/:slug"     element={<FestivalDetail />} />
-          <Route path="/districts"           element={<DistrictPage />} />
-          <Route path="/districts/:district" element={<DistrictPage />} />
           <Route path="/blog"                element={<Blog />}         />
           <Route path="/blog/:slug"          element={<BlogDetail />}   />
           <Route path="/goseva"              element={<Goseva />}       />
-          <Route path="/about"               element={<About />}        />
-          <Route path="/map"                 element={<MapPage />}      />
           <Route path="/favorites"           element={<Favorites />}    />
-          <Route path="/contact"             element={<Contact />}      />
           <Route path="/auth/login"          element={<Login />}        />
           <Route path="/auth/signup"         element={<Signup />}       />
           <Route

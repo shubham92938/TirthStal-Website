@@ -13,7 +13,6 @@ import {
 import toast from "react-hot-toast";
 import { getTempleBySlug, getNearbyTemples, FALLBACK_IMAGE } from "../../data/store";
 import { allFestivals } from "../../data/festivalStore";
-import { districts as districtData } from "../../data/districts";
 import { useFavorites } from "../../context/FavoritesContext";
 import "../../styles/temple/templeDetail.css";
 
@@ -391,11 +390,7 @@ function TempleDetail({ slug }) {
               <li><span className="info-list__label">District</span><span className="info-list__value">{temple.district}</span></li>
               <li><span className="info-list__label">State</span><span className="info-list__value">{temple.state}</span></li>
             </ul>
-            {districtData.some((d) => d.slug === temple.district.toLowerCase()) ? (
-              <Link to={`/districts/${temple.district.toLowerCase()}`} className="sidebar-card__link">Explore {temple.district} district <FiArrowRight size={13} /></Link>
-            ) : (
-              <Link to={`/temples?district=${encodeURIComponent(temple.district)}`} className="sidebar-card__link">More temples in {temple.district} <FiArrowRight size={13} /></Link>
-            )}
+            <Link to={`/temples?district=${encodeURIComponent(temple.district)}`} className="sidebar-card__link">More temples in {temple.district} <FiArrowRight size={13} /></Link>
           </div>
         </div>
       </div>
