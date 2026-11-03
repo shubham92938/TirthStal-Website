@@ -9,6 +9,15 @@ import {
 
 
 
+
+// Turn an axios error into a message the user can act on.
+// No `response` means the request never reached the API (wrong API URL, server down, CORS, no internet).
+const authErrorMessage = (err, fallback) => {
+  if (err.response?.data?.message) return err.response.data.message;
+  if (!err.response) return "Can't reach the server right now. Please check your connection and try again in a moment.";
+  return fallback;
+};
+
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -24,7 +33,7 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       return data;
     } catch (err) {
-      const msg = err.response?.data?.message || "Login failed";
+      const msg = authErrorMessage(err, "Login failed");
       setError(msg);
       throw new Error(msg, { cause: err });
     } finally {
@@ -40,7 +49,7 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       return data;
     } catch (err) {
-      const msg = err.response?.data?.message || "Registration failed";
+      const msg = authErrorMessage(err, "Registration failed");
       setError(msg);
       throw new Error(msg, { cause: err });
     } finally {
