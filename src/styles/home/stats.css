@@ -1,4 +1,4 @@
-.stats { padding: 0 48px; margin-top: -30px; position: relative; z-index: 4; }
+.stats { padding: 0 48px; margin-top: -30px; position: relative; z-index: 6; }
 .stats__grid {
   max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px;
 }
